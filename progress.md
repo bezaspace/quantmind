@@ -113,9 +113,10 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 
 | Test | Result |
 |------|--------|
-| `pytest -q` | 36/36 passed |
+| `pytest -q` | 42/42 passed (added deterministic accuracy tests) |
 | MA-crossover on RELIANCE daily (single run) | total return ~75.7%, 13 trades, max drawdown ~25.3% |
 | Parameter sweep over 108 MA-window variants | completed in ~1.2 s, best total return ~155.9% (`fast=5`, `slow=45`) |
+| Accuracy validation | hand-calculated P&L, costs, stop-loss, take-profit, trailing-stop, and `VectorBacktest` vs `SimpleBacktest` cross-check all pass |
 
 ### Next
 

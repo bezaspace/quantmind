@@ -96,3 +96,7 @@ A running record of important design and implementation decisions. Keep entries 
 ### 20. `BacktestResult` / `BacktestRun` / `Backtest` objects
 - **Decision:** Introduce a `BacktestResult` base dataclass, a `BacktestRun` subclass with `backtest_id`/`name`, and a `Backtest` configuration container.
 - **Rationale:** Satisfies the Phase 3 requirement to return a "`Backtest` object with runs and per-run metrics" and gives Phase 4 reporting a stable result type to extend.
+
+### 21. Trust the backtest engine through deterministic validation
+- **Decision:** Add a dedicated `tests/backtesting/test_backtest_accuracy.py` suite with hand-calculated P&L, fee/slippage, stop-loss, take-profit, trailing-stop, and a `VectorBacktest` vs `SimpleBacktest` cross-check.
+- **Rationale:** A custom backtester is only as good as the evidence that its arithmetic matches reality. Closed-form tests prove the engine computes the right fills, fees, and exits rather than just producing plausible-looking numbers.

@@ -108,4 +108,4 @@ print(result.best)
 
 - 100 MA-window variants on RELIANCE daily data run in under 10 seconds.
 - Multi-asset and single-asset backtests produce equity curves and trade lists.
-- 36 unit tests pass.
+- 42 unit tests pass, including deterministic accuracy checks against hand-calculated P&L, costs, stop-loss, take-profit, and trailing-stop exits, plus a `VectorBacktest` vs `SimpleBacktest` cross-check.
