@@ -1,4 +1,4 @@
-"""Upstox broker client with paper-trading fallback."""
+"""Zerodha Kite Connect broker client (stub with paper support)."""
 
 from __future__ import annotations
 
@@ -15,14 +15,14 @@ from .order import OrderRequest, OrderResponse, OrderSide, OrderStatus, OrderTyp
 logger = logging.getLogger(__name__)
 
 
-class UpstoxBrokerClient(BrokerClient):
-    """Sync Upstox v2 broker client.
+class ZerodhaBrokerClient(BrokerClient):
+    """Zerodha Kite Connect broker client.
 
-    When ``paper=True`` (or no access token is available), orders are simulated
-    locally and assigned UUID order IDs.
+    Real trading requires a Kite Connect API key + access token. When those are
+    not configured the client runs in paper mode and simulates fills.
     """
 
-    BASE_URL = "https://api.upstox.com/v2"
+    BASE_URL = "https://api.kite.trade"
 
     def __init__(
         self,
@@ -30,31 +30,31 @@ class UpstoxBrokerClient(BrokerClient):
         access_token: Optional[str] = None,
         paper: Optional[bool] = None,
     ) -> None:
-        self.api_key = api_key or os.getenv("UPSTOX_API_KEY")
-        self.access_token = access_token or os.getenv("UPSTOX_ACCESS_TOKEN") or os.getenv("UPSTOX_ANALYTICS_TOKEN")
+        self.api_key = api_key or os.getenv("ZERODHA_API_KEY")
+        self.access_token = access_token or os.getenv("ZERODHA_ACCESS_TOKEN")
         if paper is None:
             paper = not bool(self.access_token)
         self.paper = paper
 
         self.client = httpx.Client(timeout=30.0)
         if not self.paper and self.access_token:
-            self.client.headers["Authorization"] = f"Bearer {self.access_token}"
-            self.client.headers["Api-Version"] = "2.0"
-            self.client.headers["Content-Type"] = "application/json"
+            self.client.headers["Authorization"] = f"token {self.api_key}:{self.access_token}"
+            self.client.headers["X-Kite-Version"] = "3"
 
         self._paper_orders: Dict[str, OrderResponse] = {}
-        self._paper_positions: Dict[str, Any] = {}
 
     def place_order(self, request: OrderRequest) -> OrderResponse:
         if self.paper:
             return self._paper_place(request)
 
+        # Kite order payload uses `tradingsymbol` and `exchange`
         body = {
-            "quantity": str(int(request.quantity)),
-            "order_type": request.order_type.value,
-            "transaction_type": request.side.value,
-            "product": request.product,
+            "tradingsymbol": request.symbol,
             "exchange": request.exchange,
+            "transaction_type": request.side.value,
+            "order_type": request.order_type.value,
+            "quantity": str(int(request.quantity)),
+            "product": request.product,
             "validity": request.validity,
         }
         if request.price is not None:
@@ -62,14 +62,7 @@ class UpstoxBrokerClient(BrokerClient):
         if request.stop_price is not None:
             body["trigger_price"] = str(request.stop_price)
 
-        # instrument_token is required; resolve if possible
-        instrument_key = self._resolve_instrument_key(request.symbol, request.exchange)
-        if instrument_key:
-            body["instrument_token"] = instrument_key
-        else:
-            body["instrument_token"] = request.symbol
-
-        resp = self.client.post(f"{self.BASE_URL}/order/place", json=body)
+        resp = self.client.post(f"{self.BASE_URL}/orders/regular", data=body)
         resp.raise_for_status()
         data = resp.json()
         return OrderResponse(
@@ -88,9 +81,8 @@ class UpstoxBrokerClient(BrokerClient):
             if order:
                 order.status = OrderStatus.CANCELLED
             return order or self._unknown_order(order_id)
-        resp = self.client.delete(f"{self.BASE_URL}/order/cancel?order_id={order_id}")
+        resp = self.client.delete(f"{self.BASE_URL}/orders/regular/{order_id}")
         resp.raise_for_status()
-        data = resp.json()
         return OrderResponse(
             order_id=order_id,
             status=OrderStatus.CANCELLED,
@@ -107,9 +99,7 @@ class UpstoxBrokerClient(BrokerClient):
                 return [o for o in orders if o.order_id == order_id]
             return orders
 
-        url = f"{self.BASE_URL}/order/history"
-        if order_id:
-            url += f"?order_id={order_id}"
+        url = f"{self.BASE_URL}/orders"
         resp = self.client.get(url)
         resp.raise_for_status()
         data = resp.json()
@@ -117,7 +107,7 @@ class UpstoxBrokerClient(BrokerClient):
             OrderResponse(
                 order_id=o.get("order_id"),
                 status=OrderStatus(o.get("status", "PENDING")),
-                symbol=o.get("symbol", ""),
+                symbol=o.get("tradingsymbol", ""),
                 side=OrderSide(o.get("transaction_type", "BUY")),
                 order_type=OrderType(o.get("order_type", "MARKET")),
                 quantity=float(o.get("quantity", 0)),
@@ -129,20 +119,20 @@ class UpstoxBrokerClient(BrokerClient):
 
     def get_positions(self) -> List[Dict[str, Any]]:
         if self.paper:
-            return list(self._paper_positions.values())
+            return []
         resp = self.client.get(f"{self.BASE_URL}/portfolio/positions")
         resp.raise_for_status()
-        return resp.json().get("data", [])
+        return resp.json().get("data", {}).get("net", [])
 
     def get_funds(self) -> Dict[str, Any]:
         if self.paper:
             return {"paper": True, "cash": 0.0}
-        resp = self.client.get(f"{self.BASE_URL}/user/get-funds-and-margin")
+        resp = self.client.get(f"{self.BASE_URL}/user/margins")
         resp.raise_for_status()
         return resp.json().get("data", {})
 
     def _paper_place(self, request: OrderRequest) -> OrderResponse:
-        order_id = f"paper-{uuid.uuid4().hex[:8]}"
+        order_id = f"zer-{uuid.uuid4().hex[:8]}"
         order = OrderResponse(
             order_id=order_id,
             status=OrderStatus.OPEN,
@@ -153,7 +143,7 @@ class UpstoxBrokerClient(BrokerClient):
             average_price=request.price,
         )
         self._paper_orders[order_id] = order
-        logger.info("Paper order placed: %s", order_id)
+        logger.info("Paper Zerodha order placed: %s", order_id)
         return order
 
     def _unknown_order(self, order_id: str) -> OrderResponse:
@@ -166,13 +156,3 @@ class UpstoxBrokerClient(BrokerClient):
             quantity=0,
             message="Unknown order",
         )
-
-    def _resolve_instrument_key(self, symbol: str, exchange: str) -> Optional[str]:
-        try:
-            from ..data.providers import UpstoxDataProvider
-
-            provider = UpstoxDataProvider()
-            instrument = provider.resolve_instrument(symbol, exchange)
-            return instrument.get("instrument_key")
-        except Exception:
-            return None

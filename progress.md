@@ -307,6 +307,32 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | `/api/audit/query` | returns redacted audit rows |
 | `RiskController` | blocks short selling in long-only mode |
 
+---
+
+## Phase 12 — Future expansion (intraday, more brokers, F&O) ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/broker/base.py` — `BrokerClient` ABC
+- `quantmind/broker/upstox_client.py` — Upstox v2 broker client (refactored to ABC)
+- `quantmind/broker/zerodha_client.py` — Zerodha Kite Connect client with paper mode
+- `quantmind/execution/` — `IntradayScheduler` and `SchedulerConfig`
+- `quantmind/derivatives/` — `OptionContract`, `OptionType`, `get_option_chain`
+- `quantmind/agent/tools.py` — added `get_option_chain` and `run_intraday_signal` tools
+- `examples/option_chain.py`, `examples/intraday_tick.py`
+- `tests/derivatives/`, `tests/execution/`, `tests/broker/test_brokers.py`
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 103/103 passed |
+| `IntradayScheduler.run_tick` | places and fills a paper market order from a fake bar |
+| `get_option_chain` | returns synthetic option contracts when live API is unavailable |
+| Broker clients | `UpstoxBrokerClient` and `ZerodhaBrokerClient` both support paper order placement |
+
 ### Next
 
-Phase 12 — Future expansion (intraday execution, more brokers, F&O).
+Roadmap is complete. Possible next user-driven enhancements: live broker credentials, more indicators/strategies, portfolio analytics, production deployment.

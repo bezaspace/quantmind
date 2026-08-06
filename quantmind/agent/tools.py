@@ -14,6 +14,9 @@ from ..broker import OrderRequest, OrderSide, OrderType, PaperTradingExecutor
 from ..broker.upstox_client import UpstoxBrokerClient
 from ..config import get_settings
 from ..data.providers import UpstoxDataProvider
+from ..derivatives import get_option_chain
+from ..execution import IntradayScheduler, SchedulerConfig
+from ..indicators.core import ema, sma
 from ..pipeline import run_pipeline
 from ..pipeline.factors.builtin import Latest, Returns
 from ..pipeline.panel import dict_to_long_form
@@ -254,6 +257,65 @@ async def get_paper_pnl(symbols: str = "") -> ToolResult:
         return ToolResult(False, None, str(exc))
 
 
+async def get_option_chain(symbol: str) -> ToolResult:
+    """Return an option chain for an underlying symbol (synthetic if market data unavailable)."""
+    try:
+        chain = get_option_chain(symbol)
+        return ToolResult(
+            True,
+            {
+                "underlying": symbol,
+                "contracts": [
+                    {
+                        "symbol": c.symbol,
+                        "expiry": c.expiry.isoformat(),
+                        "strike": c.strike,
+                        "option_type": c.option_type.value,
+                    }
+                    for c in chain[:10]
+                ],
+            },
+        )
+    except Exception as exc:
+        logger.exception("get_option_chain failed")
+        return ToolResult(False, None, str(exc))
+
+
+async def run_intraday_signal(symbol: str, fast: int = 5, slow: int = 10) -> ToolResult:
+    """Fetch the latest 1-minute bars and emit a BUY/SELL/HOLD signal based on SMA crossover."""
+    try:
+        provider = UpstoxDataProvider()
+        df = provider.get_ohlcv(symbol, "1minute")
+        if df.height < slow:
+            return ToolResult(False, None, "Not enough 1m data")
+        df = sma(df, fast, column="Close", result_column="fast")
+        df = sma(df, slow, column="Close", result_column="slow")
+        fast_val = float(df["fast"][-1])
+        slow_val = float(df["slow"][-1])
+        prev_fast = float(df["fast"][-2])
+        prev_slow = float(df["slow"][-2])
+
+        signal = "HOLD"
+        if prev_fast <= prev_slow and fast_val > slow_val:
+            signal = "BUY"
+        elif prev_fast >= prev_slow and fast_val < slow_val:
+            signal = "SELL"
+
+        return ToolResult(
+            True,
+            {
+                "symbol": symbol,
+                "signal": signal,
+                "fast": fast_val,
+                "slow": slow_val,
+                "price": float(df["Close"][-1]),
+            },
+        )
+    except Exception as exc:
+        logger.exception("run_intraday_signal failed")
+        return ToolResult(False, None, str(exc))
+
+
 async def save_backtest_bundle(path: str, result_json: str) -> ToolResult:
     """Save a backtest result as an .iafbt bundle."""
     try:
@@ -372,6 +434,32 @@ TOOLS = [
             },
         },
         handler=get_paper_pnl,
+    ),
+    Tool(
+        name="get_option_chain",
+        description="Return an option chain for an underlying symbol.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string"},
+            },
+            "required": ["symbol"],
+        },
+        handler=get_option_chain,
+    ),
+    Tool(
+        name="run_intraday_signal",
+        description="Fetch the latest 1-minute bars and emit a BUY/SELL/HOLD SMA-crossover signal.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string"},
+                "fast": {"type": "integer", "default": 5},
+                "slow": {"type": "integer", "default": 10},
+            },
+            "required": ["symbol"],
+        },
+        handler=run_intraday_signal,
     ),
     Tool(
         name="save_backtest_bundle",

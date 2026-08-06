@@ -46,6 +46,19 @@ class TradingCalendar:
             cursor += timedelta(days=1)
         return days
 
+    def market_hours(self, dt: date) -> tuple[datetime, datetime]:
+        """Return market open and close datetime for the given trading day.
+
+        Intraday equity markets run 09:15 to 15:30 IST.
+        """
+        from datetime import time
+        from zoneinfo import ZoneInfo
+
+        tz = ZoneInfo("Asia/Kolkata")
+        open_t = datetime.combine(dt, time(9, 15), tzinfo=tz)
+        close_t = datetime.combine(dt, time(15, 30), tzinfo=tz)
+        return open_t, close_t
+
     def is_holiday(self, dt: date) -> bool:
         return dt in self._holidays_for_year(dt.year)
 

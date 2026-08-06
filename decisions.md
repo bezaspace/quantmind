@@ -228,3 +228,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 45. Container and platform deployment helpers
 - **Decision:** Provide `Dockerfile`, `docker-compose.yml`, `fly.toml`, `Procfile`, and `scripts/deploy.sh` so the backend can be deployed to Fly.io, Heroku, or any Docker host.
 - **Rationale:** The project is no longer just a local script; explicit deployment artifacts lower friction for hosting the API.
+
+---
+
+## 2026-08-06 — Phase 12 (Future expansion)
+
+### 46. `BrokerClient` abstraction for multiple brokers
+- **Decision:** Introduce `BrokerClient` ABC and refactor `UpstoxBrokerClient` to implement it. Add a `ZerodhaBrokerClient` with the same interface and paper-trading fallback.
+- **Rationale:** QuantMind should not be locked to a single broker; a common interface lets us support Upstox, Zerodha, and future brokers without leaking provider-specific payloads into the executor.
+
+### 47. Intraday scheduler
+- **Decision:** Add `IntradayScheduler` that polls 1-minute bars during NSE market hours (09:15–15:30 IST), invokes a user-supplied signal function, and routes market orders through `PaperTradingExecutor`.
+- **Rationale:** This is the bridge from daily backtests to live-style intraday execution; keeping it pluggable lets users swap in real broker clients when credentials are configured.
+
+### 48. Futures & Options stubs
+- **Decision:** Add `quantmind/derivatives/option_chain.py` with `OptionContract`, `OptionType`, and a `get_option_chain` helper that parses Upstox option-chain data and falls back to a synthetic chain for development.
+- **Rationale:** F&O support is a roadmap requirement; starting with a contract model and chain fetcher gives the agent a foundation for option-aware queries without needing live F&O credentials.

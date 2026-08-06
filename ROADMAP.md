@@ -690,14 +690,14 @@ engineering — each backed by code you can show and design decisions you can de
 | 9 | Chat UI (React + TS + SSE, inline charts, approval cards) | Done | Vite + React + TypeScript frontend in `frontend/`, EventSource SSE, `ApprovalCard`, `ResultChart` |
 | 10 | Paper trading with Upstox sandbox (OrderExecutor, portfolio, P&L) | Done | `UpstoxBrokerClient`, `PaperTradingExecutor`, `PortfolioTracker`, agent `place_paper_order` / `get_paper_portfolio` / `get_paper_pnl` tools |
 | 11 | Production hardening (auth, risk controls, audit, disclaimers) | Done | `Settings`, `require_api_key`, rate limiting, `AuditLogger`, `RiskController`, `/api/disclaimer`, `Dockerfile`, `docker-compose.yml`, `fly.toml` |
-| 12 | Future expansion (intraday, more brokers, F&O) | Not started | See §9 Phase 12 |
+| 12 | Future expansion (intraday, more brokers, F&O) | Done | `BrokerClient` ABC, `UpstoxBrokerClient`, `ZerodhaBrokerClient`, `IntradayScheduler`, `get_option_chain`, `run_intraday_signal` |
 
 ### Next recommended step
 
-Phase 11 is complete (auth, rate limiting, audit logging, risk controls,
-disclaimers, and Docker/Fly/Heroku deployment helpers). Next is
-**Phase 12** — future expansion: intraday execution, more brokers, and
-F&O support.
+Phase 12 is complete (`BrokerClient` abstraction for Upstox/Zerodha,
+`IntradayScheduler`, option-chain support, and F&O stubs). The roadmap is
+now fully implemented; next steps are user-driven enhancements: live broker
+credentials, more strategies, portfolio analytics, or production deployment.
 
 ---
 

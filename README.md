@@ -333,3 +333,34 @@ export FLY_APP_NAME=quantmind
 - `AuditMiddleware` logs requests; `/api/audit/query` returns redacted rows.
 - `RiskController` blocks short selling in long-only mode and rejects oversize orders.
 - `pytest -q` passes 97 unit tests.
+
+## Phase 12
+
+Future expansion:
+
+- `quantmind/broker/base.py` — `BrokerClient` ABC
+- `quantmind/broker/zerodha_client.py` — Zerodha Kite Connect client with paper mode
+- `quantmind/execution/scheduler.py` — `IntradayScheduler` for 1-minute bar trading during NSE hours
+- `quantmind/derivatives/option_chain.py` — `OptionContract`, `OptionType`, `get_option_chain`
+- Agent tools: `get_option_chain`, `run_intraday_signal`
+
+```python
+from quantmind.execution import IntradayScheduler, SchedulerConfig
+from quantmind.broker import PaperTradingExecutor, UpstoxBrokerClient
+
+scheduler = IntradayScheduler(
+    config=SchedulerConfig(symbols=["RELIANCE"]),
+    executor=PaperTradingExecutor(client=UpstoxBrokerClient(paper=True)),
+    signal_fn=lambda symbol, bar: "BUY" if bar["Close"] > 2500 else None,
+)
+scheduler.run(duration_seconds=300)
+```
+
+## Phase 12 acceptance
+
+- `BrokerClient` abstraction supports Upstox and Zerodha with paper fallback.
+- `IntradayScheduler.run_tick` fetches a bar, emits a signal, and fills a paper market order.
+- `get_option_chain` returns option contracts (synthetic if live API is unavailable).
+- `pytest -q` passes 103 unit tests.
+
+The QuantMind roadmap is complete.
