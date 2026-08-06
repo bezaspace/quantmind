@@ -132,3 +132,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 27. One-bar market-order delay
 - **Decision:** Market orders generated at the close of bar `t` are filled at the open of bar `t+1`.
 - **Rationale:** Prevents lookahead bias. The strategy only sees bar `t` data when deciding; the actual fill occurs on the next bar's open, which is the earliest realistic price.
+
+---
+
+## 2026-08-06 — Phase 6 (Cross-sectional pipelines)
+
+### 28. Declarative `Pipeline` with class-attribute factors/filters
+- **Decision:** Implement `Pipeline` base class using `__init_subclass__` to introspect class attributes, mirroring the reference design but with Polars internals. `Filter` is modeled as a subclass of `Factor` so it can participate in `rank(mask=...)` and `universe` declarations.
+- **Rationale:** A class-based DSL is expressive for cross-sectional screens and keeps universe definitions co-located with the factors that feed them. Reusing `Factor` for `Filter` avoids duplicating caching and evaluation machinery.
+
+### 29. Long-form panel as the canonical pipeline input
+- **Decision:** `PipelineEngine.run()` takes a long-form DataFrame with `datetime`, `symbol`, and lower-case OHLCV columns, and produces a long-form DataFrame of factor values and boolean filters.
+- **Rationale:** Polars window/over expressions work naturally on long-form panels. It also makes it trivial to join pipeline output back to per-symbol strategy signals.
+
+### 30. Pipeline-to-strategy bridge
+- **Decision:** Add `PipelineMomentumStrategy` in `quantmind/pipeline/strategy_bridge.py` that converts a `Pipeline` ranking into per-symbol boolean buy/sell signals consumable by `VectorBacktest`.
+- **Rationale:** Phases 1–5 already had a stable backtest/strategy API. A thin bridge lets pipeline-ranked universes plug directly into the existing `VectorBacktest` without changing the backtest engine.

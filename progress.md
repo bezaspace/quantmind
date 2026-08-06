@@ -160,6 +160,32 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | `pytest -q` | 59/59 passed |
 | MA-crossover on RELIANCE daily (event-driven) | total return ~74.0%, max drawdown ~23.5%, 12 trades, 50% win rate |
 
+---
+
+## Phase 6 — Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking) ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/pipeline/factor.py` — `Factor` base, `_Rank`, `_BinaryOp`, `_UnaryOp`, `_Constant`, `_Zscore`, `_Demean`, `_Winsorize`
+- `quantmind/pipeline/filter.py` — `Filter` (is-a Factor), `_TopN`, `_BottomN`, `_And`, `_Or`, `_Not`
+- `quantmind/pipeline/pipeline.py` — declarative `Pipeline` base with `__init_subclass__` introspection
+- `quantmind/pipeline/pipeline_engine.py` — `PipelineEngine` and `run_pipeline`
+- `quantmind/pipeline/factors/builtin.py` — `Returns`, `Latest`, `SMA`, `EMA`, `AverageDollarVolume`, `StaticPerSymbol`
+- `quantmind/pipeline/panel.py` — `dict_to_long_form` helper
+- `quantmind/pipeline/strategy_bridge.py` — `PipelineMomentumStrategy` that maps pipeline ranks to per-symbol buy/sell signals
+- `examples/pipeline_universe.py` — multi-asset momentum ranking backtest on synthetic universe
+- `tests/pipeline/test_pipeline.py`
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 67/67 passed |
+| Pipeline momentum universe (10 synthetic symbols, top-1) | total return ~98.2%, 1 trade, max drawdown 0% |
+| Cross-sectional `rank`, `top` filter, `zscore`, `demean`, arithmetic, groups, universe mask | all verified in tests |
+
 ### Next
 
-Phase 6 — Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking).
+Phase 7 — Storage and indexing.

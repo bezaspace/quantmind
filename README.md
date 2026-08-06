@@ -152,3 +152,33 @@ result = EventDrivenBacktest(strategy, {"RELIANCE_day": df}, cost_model=cost_mod
 - `EventDrivenBacktest` runs the MA-crossover strategy with realistic Indian CNC costs.
 - `ExecutionEngine` fills market, limit, and stop orders correctly in unit tests.
 - 59 unit tests pass.
+
+## Phase 6
+
+Cross-sectional pipeline and universe ranking in `quantmind/pipeline/`:
+
+- `Pipeline` — declarative factor/filter container
+- `Factor` / `Filter` — base classes with `rank`, `top`, `bottom`, `zscore`, `demean`, `winsorize`, and arithmetic operators
+- `PipelineEngine` / `run_pipeline` — executes pipelines on long-form panels
+- Built-in factors: `Returns`, `Latest`, `SMA`, `EMA`, `AverageDollarVolume`, `StaticPerSymbol`
+- `PipelineMomentumStrategy` — bridge from pipeline rankings to `VectorBacktest` buy/sell signals
+- `examples/pipeline_universe.py` — ranks a 10-asset synthetic universe by momentum and backtests the top-1 pick
+
+```python
+from quantmind.pipeline import Pipeline, run_pipeline
+from quantmind.pipeline.factors.builtin import AverageDollarVolume, Latest, Returns
+
+class MomentumPipeline(Pipeline):
+    close = Latest("close")
+    returns = Returns(window=5)
+    universe = AverageDollarVolume(window=5).top(5)
+    momentum_rank = returns.rank(mask=universe)
+
+result = run_pipeline(panel, MomentumPipeline)
+```
+
+## Phase 6 acceptance
+
+- Pipeline ranks a 10-symbol synthetic universe by momentum and the top pick is backtested via `VectorBacktest`.
+- `rank`, `top`, `zscore`, `demean`, arithmetic, groups, and universe mask are tested.
+- 67 unit tests pass.
