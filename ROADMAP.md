@@ -454,17 +454,19 @@ design cut cost X%" is a standout resume line.
 - Configure secrets for Upstox and LLM provider.
 - Create this `ROADMAP.md` file.
 
-### Phase 1 — Indian market data layer
-- Implement a `DataProvider` abstract base class.
-- Implement `UpstoxDataProvider`:
-  - OAuth / access-token handling.
-  - Instrument master download and cache.
-  - Historical candle fetch.
-  - Symbol → instrument token resolution.
-- Implement `YahooFinanceDataProvider` as daily historical fallback.
-- Implement local OHLCV cache and content-addressed dedup.
-- Add NSE/BSE holiday calendar.
-- **Acceptance:** Fetch and cache 5 years of RELIANCE daily data in under 2 seconds from
+### Phase 1 — Indian market data layer ✅
+- [x] Implement a `DataProvider` abstract base class.
+- [x] Implement `UpstoxDataProvider`:
+  - [x] OAuth / access-token handling via `UPSTOX_ANALYTICS_TOKEN`.
+  - [x] Instrument master download and cache.
+  - [x] Historical candle fetch.
+  - [x] Symbol → instrument token resolution.
+  - [x] 1-minute and 30-minute interval support with automatic chunking.
+- [x] Implement `YahooFinanceDataProvider` as daily/weekly/monthly historical fallback.
+- [x] Implement `ChainedDataProvider` fallback from Upstox to Yahoo Finance.
+- [x] Implement local OHLCV cache and content-addressed dedup.
+- [x] Add NSE/BSE holiday calendar.
+- [x] **Acceptance:** Fetch and cache 5 years of RELIANCE daily data in under 2 seconds from
   cache.
 
 ### Phase 2 — Strategy abstraction
@@ -675,7 +677,7 @@ engineering — each backed by code you can show and design decisions you can de
 | Phase | Goal | Status | Notes |
 |-------|------|--------|-------|
 | 0 | Repo, roadmap, reference fork | Done | `ROADMAP.md` created, reference repo forked into org |
-| 1 | Indian market data layer (Upstox + Yahoo, instrument master, OHLCV cache, holidays) | Not started | See §9 Phase 1 |
+| 1 | Indian market data layer (Upstox + Yahoo, instrument master, OHLCV cache, holidays) | Done | `quantmind/data/` implemented; acceptance passed |
 | 2 | Strategy abstraction (TradingStrategy, indicators, parameter sweep) | Not started | See §9 Phase 2 |
 | 3 | Vector backtest engine | Not started | See §9 Phase 3 |
 | 4 | Metrics and reporting (30+ metrics, BacktestReport) | Not started | See §9 Phase 4 |
@@ -690,12 +692,10 @@ engineering — each backed by code you can show and design decisions you can de
 
 ### Next recommended step
 
-Phase 0 is complete (repo + roadmap + reference fork). Next is **Phase 1** — the Indian
-market data layer: `DataProvider` ABC, `UpstoxDataProvider` (OAuth, instrument master,
-historical candles), `YahooFinanceDataProvider` fallback, OHLCV cache with
-content-addressed dedup, and the NSE/BSE holiday calendar. Study
-`investing_algorithm_framework/domain/strategy.py` and the data provider modules in the
-reference fork first.
+Phase 1 is complete (Indian market data layer). Next is **Phase 2** — the strategy
+abstraction: `TradingStrategy`, position sizing, stop losses, take profits, indicators,
+and parameter sweep helpers. Study `investing_algorithm_framework/domain/strategy.py`
+and the strategy examples in the reference fork first.
 
 ---
 
