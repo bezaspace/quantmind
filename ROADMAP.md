@@ -469,17 +469,19 @@ design cut cost X%" is a standout resume line.
 - [x] **Acceptance:** Fetch and cache 5 years of RELIANCE daily data in under 2 seconds from
   cache.
 
-### Phase 2 — Strategy abstraction
-- Re-implement `TradingStrategy`:
-  - `symbols`, `universe`, `time_unit`, `interval`.
-  - `data_sources`.
-  - `position_sizes`, `stop_losses`, `take_profits`.
-  - `scaling_rules`, `cooldowns`, `trading_costs`.
-  - `generate_buy_signals(data)` and `generate_sell_signals(data)`.
-- Add Indian-market-aware defaults (CNC, long-only).
-- Build an indicator helper library.
-- Add parameter-sweep helper.
-- **Acceptance:** A simple MA-crossover strategy can be defined and backtested.
+### Phase 2 — Strategy abstraction ✅
+- [x] Re-implement `TradingStrategy`:
+  - [x] `symbols`, `universe` (via `data_sources`), `time_unit`, `interval`.
+  - [x] `data_sources`.
+  - [x] `position_sizes`, `stop_losses`, `take_profits`.
+  - [x] `scaling_rules`, `cooldowns`, `trading_costs`.
+  - [x] `generate_buy_signals(data)` and `generate_sell_signals(data)`.
+- [x] Add Indian-market-aware defaults (NSE, CNC, long-only).
+- [x] Build an indicator helper library (`quantmind/indicators/` with pure Polars functions).
+- [x] Add parameter-sweep helper (`quantmind/strategy/sweep.py`).
+- [x] Add a lightweight single-asset `SimpleBacktest` runner to validate the abstraction.
+- [x] **Acceptance:** A simple MA-crossover strategy can be defined and backtested on
+  5 years of RELIANCE daily data.
 
 ### Phase 3 — Vector backtest engine
 - Re-implement a Polars/pandas vectorized backtest engine.
@@ -678,7 +680,7 @@ engineering — each backed by code you can show and design decisions you can de
 |-------|------|--------|-------|
 | 0 | Repo, roadmap, reference fork | Done | `ROADMAP.md` created, reference repo forked into org |
 | 1 | Indian market data layer (Upstox + Yahoo, instrument master, OHLCV cache, holidays) | Done | `quantmind/data/` implemented; acceptance passed |
-| 2 | Strategy abstraction (TradingStrategy, indicators, parameter sweep) | Not started | See §9 Phase 2 |
+| 2 | Strategy abstraction (TradingStrategy, indicators, parameter sweep, simple backtest) | Done | `quantmind/domain/strategy.py`, `quantmind/indicators/`, `quantmind/backtesting/simple.py`; MA-crossover on RELIANCE works |
 | 3 | Vector backtest engine | Not started | See §9 Phase 3 |
 | 4 | Metrics and reporting (30+ metrics, BacktestReport) | Not started | See §9 Phase 4 |
 | 5 | Event-driven backtest engine (blotter, slippage, Indian cost model) | Not started | See §9 Phase 5 |
@@ -692,10 +694,10 @@ engineering — each backed by code you can show and design decisions you can de
 
 ### Next recommended step
 
-Phase 1 is complete (Indian market data layer). Next is **Phase 2** — the strategy
-abstraction: `TradingStrategy`, position sizing, stop losses, take profits, indicators,
-and parameter sweep helpers. Study `investing_algorithm_framework/domain/strategy.py`
-and the strategy examples in the reference fork first.
+Phase 2 is complete (strategy abstraction, indicators, parameter sweep, and a
+lightweight `SimpleBacktest` runner). Next is **Phase 3** — the vector backtest engine:
+a Polars-first multi-asset backtester with efficient signal handling, position sizing,
+stop losses, take profits, trailing stops, cooldowns, and trading costs.
 
 ---
 

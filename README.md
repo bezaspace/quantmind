@@ -45,8 +45,32 @@ chain = ChainedDataProvider([
 ])
 ```
 
-## Phase 1 acceptance
+## Phase 2
 
-- Fetch and cache 5 years of RELIANCE daily data from Upstox in <2 seconds from cache.
-- 1-minute and 30-minute candles are fetched via automatic chunked requests.
-- 13 unit tests pass.
+The strategy layer is implemented in `quantmind/domain/` and `quantmind/backtesting/`:
+
+- `TradingStrategy` ABC — parameters, data sources, signal generation
+- `quantmind/indicators/` — pure-Polars SMA, EMA, RSI, MACD, Bollinger, ATR, returns, volatility, crossover/crossunder
+- `PositionSize`, `StopLossRule`, `TakeProfitRule`, `ScalingRule`, `CooldownRule`, `CooldownTracker`, `TradingCost`
+- `ParameterGrid` + `sweep` for parameter search
+- `SimpleBacktest` — single-asset bar-by-bar backtest runner
+- `examples/moving_average_crossover.py` — example EMA crossover strategy
+
+```python
+from examples.moving_average_crossover import MovingAverageCrossoverStrategy
+from quantmind.backtesting import SimpleBacktest
+from quantmind.data.providers import UpstoxDataProvider
+
+df = UpstoxDataProvider().get_ohlcv(
+    "RELIANCE", "day", start="2019-08-06", end="2024-08-06"
+)
+strategy = MovingAverageCrossoverStrategy(symbol="RELIANCE", fast_period=20, slow_period=50)
+result = SimpleBacktest(strategy, {"RELIANCE_day": df}, initial_capital=1_000_000).run()
+print(result.total_return, result.num_trades, result.max_drawdown)
+```
+
+## Phase 2 acceptance
+
+- A MA-crossover strategy can be defined and backtested on 5 years of RELIANCE daily data.
+- Parameter sweep over fast/slow periods runs and finds the best combination.
+- 31 unit tests pass.

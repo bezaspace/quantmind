@@ -19,3 +19,7 @@ class UnsupportedInterval(DataProviderError):
 
 class ConfigurationError(QuantMindError):
     """Raised when required configuration is missing."""
+
+
+class StrategyError(QuantMindError):
+    """Raised when a strategy is misconfigured or misused."""

@@ -56,3 +56,27 @@ A running record of important design and implementation decisions. Keep entries 
 ### 12. Logging added to data providers
 - **Decision:** Add `logging` debug calls to `UpstoxDataProvider` and cache operations.
 - **Rationale:** An infinite-loop bug in `_date_chunks` was hard to spot without visible progress; logging made it trivial to identify and fix.
+
+---
+
+## 2026-08-06 — Phase 2 (Strategy abstraction, indicators, and simple backtest)
+
+### 13. Port and adapt the reference framework, not import it
+- **Decision:** Read `investing-algorithm-framework` source and re-implement its proven patterns (`TradingStrategy`, risk rules, cooldown tracker, backtest runner) in `quantmind/`, not install it as a dependency.
+- **Rationale:** The user wants the system to look self-built while benefiting from a validated design. Code is adapted to Polars-first, Indian-market defaults.
+
+### 14. Polars-only internal OHLCV pipeline
+- **Decision:** `generate_buy_signals`/`generate_sell_signals` receive `dict[str, pl.DataFrame]` and return `dict[str, pl.Series]`. All indicators are implemented in pure Polars.
+- **Rationale:** Avoids pandas/polars friction and keeps Phase 3 vectorization natural. `pandas` is still used only for `yfinance` compatibility.
+
+### 15. Lightweight `SimpleBacktest` as a Phase 2 acceptance runner
+- **Decision:** Implement a single-asset, bar-by-bar `SimpleBacktest` runner that uses `TradingStrategy` signals, `PositionSize`, `TradingCost`, `StopLossRule`, `TakeProfitRule`, `CooldownRule`, and `ScalingRule`.
+- **Rationale:** It proves the strategy abstraction works without building the full multi-asset vector engine planned for Phase 3.
+
+### 16. Indian-market defaults inside `TradingStrategy`
+- **Decision:** `market="NSE"`, `product_type="CNC"`, `long_only=True` are class-level defaults.
+- **Rationale:** Reduces boilerplate for Indian-equity strategies and enforces long-only in the simple backtest until short selling is explicitly supported.
+
+### 17. Parameter sweep without full backtest engine
+- **Decision:** `ParameterGrid` + `sweep(strategy_class, grid, run_backtest)` accepts a user-provided backtest callable.
+- **Rationale:** Keeps sweep independent of the runner implementation; works with `SimpleBacktest` today and `VectorBacktest` in Phase 3.

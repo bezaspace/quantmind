@@ -56,3 +56,39 @@ See `decisions.md` for rationale.
 ### Next
 
 Phase 2 — Strategy abstraction (`TradingStrategy`, indicators, parameter sweep).
+
+---
+
+## Phase 2 — Strategy abstraction ✅
+
+**Date:** 2026-08-06  
+**Commit:** `e9eb35a` (initial) + Phase 2 implementation to follow
+
+### Deliverables
+
+- `quantmind/domain/`
+  - `models.py` — added `TimeUnit`, `DataType`, `OrderSide`, `OrderType`, `OrderStatus`; extended `DataSource` with `identifier`, `data_type`, `warmup_window`
+  - `risk.py` — `PositionSize`, `StopLossRule`, `TakeProfitRule`, `ScalingRule`, `CooldownRule`, `CooldownTracker`, `TradingCost`
+  - `strategy.py` — `TradingStrategy` ABC with parameters, data-source validation, signal helpers, and Indian defaults (NSE, CNC, long-only)
+  - `exceptions.py` — added `StrategyError`
+- `quantmind/indicators/` — pure-Polars technical indicators (`sma`, `ema`, `rsi`, `macd`, `bollinger_bands`, `atr`, `returns`, `volatility`, `crossover`, `crossunder`, `add_basic_liquidity`)
+- `quantmind/strategy/` — `ParameterGrid` and `sweep` helper
+- `quantmind/backtesting/` — `SimpleBacktest` single-asset bar-by-bar runner
+- `examples/moving_average_crossover.py` — example `MovingAverageCrossoverStrategy`
+- `tests/`
+  - `domain/test_strategy.py`
+  - `indicators/test_indicators.py`
+  - `backtesting/test_simple_backtest.py`
+  - `strategy/test_parameter_sweep.py`
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 31/31 passed |
+| MA-crossover on RELIANCE daily 2019-08-06 → 2024-08-06 | total return ~77.9%, 12 trades, max drawdown ~24.3% |
+| Parameter sweep over fast/slow periods | best params found (`fast_period=10`, `slow_period=50` gave ~88.6% total return) |
+
+### Next
+
+Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
