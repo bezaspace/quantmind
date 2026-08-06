@@ -118,6 +118,26 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | Parameter sweep over 108 MA-window variants | completed in ~1.2 s, best total return ~155.9% (`fast=5`, `slow=45`) |
 | Accuracy validation | hand-calculated P&L, costs, stop-loss, take-profit, trailing-stop, and `VectorBacktest` vs `SimpleBacktest` cross-check all pass |
 
+---
+
+## Phase 4 — Metrics and reporting ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/metrics/core.py` — 30+ backtest metrics including CAGR, annualized return/volatility, Sharpe, Sortino, Calmar, max drawdown, average drawdown, ulcer index, recovery factor, win rate, profit factor, trade expectancy, payoff ratio, trade duration metrics, gross/net profit, total fees, VaR, CVaR, return skewness/kurtosis, streaks, exposure, beta/alpha/information/treynor (with benchmark), monthly returns and heatmap
+- `quantmind/reporting/report.py` — `BacktestReport` dataclass with `from_result`, `to_dict`, `to_json`, `to_markdown`, `to_html` (Plotly when available, SVG fallback), `save_html`, `save_json`, `save_markdown`
+- `examples/generate_report.py` — MA-crossover report generation
+- `tests/metrics/test_metrics.py` and `tests/reporting/test_report.py`
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 54/54 passed |
+| MA-crossover `BacktestReport` | generated HTML, JSON, and Markdown with equity curve, drawdown, 42 metrics, trade table, and monthly-returns heatmap |
+
 ### Next
 
-Phase 4 — Metrics and reporting (`BacktestReport`, 30+ metrics).
+Phase 5 — Event-driven backtest engine and Indian cost model.

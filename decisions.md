@@ -100,3 +100,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 21. Trust the backtest engine through deterministic validation
 - **Decision:** Add a dedicated `tests/backtesting/test_backtest_accuracy.py` suite with hand-calculated P&L, fee/slippage, stop-loss, take-profit, trailing-stop, and a `VectorBacktest` vs `SimpleBacktest` cross-check.
 - **Rationale:** A custom backtester is only as good as the evidence that its arithmetic matches reality. Closed-form tests prove the engine computes the right fills, fees, and exits rather than just producing plausible-looking numbers.
+
+---
+
+## 2026-08-06 — Phase 4 (Metrics and reporting)
+
+### 22. Polars-first metrics library
+- **Decision:** Implement 30+ metrics in `quantmind/metrics/core.py` using Polars `Series` operations and pure Python for statistics not exposed by Polars.
+- **Rationale:** Metrics are computed from `VectorBacktest` outputs that are already Polars DataFrames. Staying native avoids the `pyarrow`/`to_pandas` conversion issues we hit in `BacktestReport` and keeps the pipeline fast and dependency-light.
+
+### 23. `BacktestReport` renders to JSON, Markdown, and HTML without mandatory plotting dependencies
+- **Decision:** `BacktestReport` provides `to_dict`, `to_json`, `to_markdown`, and `to_html`. HTML uses Plotly when installed; otherwise it falls back to simple SVG equity/drawdown charts and self-generated HTML tables.
+- **Rationale:** The environment may not have `plotly` or `pyarrow`; the report must still be readable and saveable. Plotly is only a soft dependency.
+
+### 24. Hand-calculated metric tests
+- **Decision:** Add `tests/metrics/test_metrics.py` with closed-form checks for `total_return`, `cagr`, `max_drawdown`, `sharpe`, `profit_factor`, `win_rate`, and `monthly_heatmap`.
+- **Rationale:** Metrics must be trustworthy. Closed-form tests guarantee that popular metrics like CAGR and drawdown are computed exactly as users would calculate them by hand.

@@ -154,8 +154,15 @@ class TradingStrategy:
         }
 
     def get_parameters(self) -> Dict[str, Any]:
-        """Return stored strategy parameters."""
-        return dict(self._parameters)
+        """Return stored strategy parameters, enriched with identifiers."""
+        merged = {
+            "strategy_id": self.strategy_id,
+            "algorithm_id": self.algorithm_id,
+            "market": self.market,
+            "product_type": self.product_type,
+        }
+        merged.update(self._parameters)
+        return merged
 
     def generate_buy_signals(
         self, data: Dict[str, pl.DataFrame]

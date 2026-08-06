@@ -109,3 +109,24 @@ print(result.best)
 - 100 MA-window variants on RELIANCE daily data run in under 10 seconds.
 - Multi-asset and single-asset backtests produce equity curves and trade lists.
 - 42 unit tests pass, including deterministic accuracy checks against hand-calculated P&L, costs, stop-loss, take-profit, and trailing-stop exits, plus a `VectorBacktest` vs `SimpleBacktest` cross-check.
+
+## Phase 4
+
+The metrics and reporting layer is in `quantmind/metrics/` and `quantmind/reporting/`:
+
+- 30+ metrics: total return, CAGR, Sharpe, Sortino, Calmar, max drawdown, drawdown duration, win rate, profit factor, trade expectancy, VaR, CVaR, skewness, kurtosis, exposure, beta/alpha/information/Treynor (with benchmark), monthly returns heatmap, and more.
+- `BacktestReport` — generates JSON, Markdown, and HTML reports with equity curves, drawdown charts, and trade tables.
+
+```python
+from examples.generate_report import main
+
+main()
+# /tmp/reliance_ma_crossover_report.html
+# /tmp/reliance_ma_crossover_report.json
+```
+
+## Phase 4 acceptance
+
+- `BacktestReport` renders a full HTML/Markdown/JSON report for the MA-crossover backtest.
+- 30+ metrics computed, including closed-form verified CAGR, drawdown, and profit factor.
+- 54 unit tests pass.

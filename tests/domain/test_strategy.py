@@ -46,10 +46,17 @@ def test_strategy_scheduling_interval_validation():
 def test_strategy_parameters_roundtrip():
     s = TradingStrategy(time_unit="day", interval=1, symbols=["RELIANCE"])
     s.set_parameters({"fast": 10, "slow": 20, "nested": {"a": 1}})
-    assert s.get_parameters() == {"fast": 10, "slow": 20, "nested": {"a": 1}}
+    params = s.get_parameters()
+    assert params["fast"] == 10
+    assert params["slow"] == 20
+    assert params["nested"] == {"a": 1}
+    assert "strategy_id" in params
 
 
 def test_strategy_parameters_drop_non_serializable():
     s = TradingStrategy(time_unit="day", interval=1, symbols=["RELIANCE"])
     s.set_parameters({"ok": 1, "bad": object()})
-    assert s.get_parameters() == {"ok": 1}
+    params = s.get_parameters()
+    assert params["ok"] == 1
+    assert "bad" not in params
+    assert "strategy_id" in params
