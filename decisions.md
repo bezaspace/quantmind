@@ -80,3 +80,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 17. Parameter sweep without full backtest engine
 - **Decision:** `ParameterGrid` + `sweep(strategy_class, grid, run_backtest)` accepts a user-provided backtest callable.
 - **Rationale:** Keeps sweep independent of the runner implementation; works with `SimpleBacktest` today and `VectorBacktest` in Phase 3.
+
+---
+
+## 2026-08-06 — Phase 3 (Vector backtest engine)
+
+### 18. Polars-first multi-asset backtest with pre-aligned arrays
+- **Decision:** `VectorBacktest` builds a master `Datetime` index, aligns each symbol's OHLCV and signal series to it, and runs a fast Python loop over pre-extracted lists.
+- **Rationale:** Avoids per-bar Polars row lookups; the inner loop works on plain `float`/`bool` lists. For 100 MA-window variants on 1,240 RELIANCE daily bars this completed in ~1.2 s, satisfying the Phase 3 acceptance threshold.
+
+### 19. Microsecond-normalized `Datetime` columns
+- **Decision:** `VectorBacktest.run()` casts every input `Datetime` column to `pl.Datetime("us")` before alignment and signal generation.
+- **Rationale:** `UpstoxDataProvider` returns `datetime[ns]` while Polars defaults and indicator outputs often produce `datetime[us]`. Normalization prevents join/schema errors without touching provider internals.
+
+### 20. `BacktestResult` / `BacktestRun` / `Backtest` objects
+- **Decision:** Introduce a `BacktestResult` base dataclass, a `BacktestRun` subclass with `backtest_id`/`name`, and a `Backtest` configuration container.
+- **Rationale:** Satisfies the Phase 3 requirement to return a "`Backtest` object with runs and per-run metrics" and gives Phase 4 reporting a stable result type to extend.

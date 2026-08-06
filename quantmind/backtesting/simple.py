@@ -8,7 +8,6 @@ engine planned for Phase 3.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
@@ -17,21 +16,9 @@ import polars as pl
 from ..domain.models import DataSource, Interval
 from ..domain.risk import CooldownRule, PositionSize, ScalingRule, TradingCost
 from ..domain.strategy import TradingStrategy
+from .result import BacktestResult, max_drawdown
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class BacktestResult:
-    """Result of a `SimpleBacktest` run."""
-
-    equity_curve: pl.DataFrame
-    trades: pl.DataFrame
-    total_return: float
-    max_drawdown: float
-    num_trades: int
-    win_rate: float
-    parameters: Dict[str, Any] = field(default_factory=dict)
 
 
 class SimpleBacktest:
@@ -337,7 +324,7 @@ class SimpleBacktest:
         total_return = (last_equity - self.initial_capital) / self.initial_capital
 
         equity_df = pl.DataFrame(equity_rows)
-        max_drawdown = self._max_drawdown(equity_df)
+        max_dd = max_drawdown(equity_df["TotalEquity"]) if not equity_df.is_empty() else 0.0
 
         trades_df = pl.DataFrame(trades) if trades else pl.DataFrame(
             schema={
@@ -360,14 +347,14 @@ class SimpleBacktest:
 
         logger.debug(
             "SimpleBacktest.run done: total_return=%.4f max_drawdown=%.4f trades=%d",
-            total_return, max_drawdown, num_trades,
+            total_return, max_dd, num_trades,
         )
 
         return BacktestResult(
             equity_curve=equity_df,
             trades=trades_df,
             total_return=total_return,
-            max_drawdown=max_drawdown,
+            max_drawdown=max_dd,
             num_trades=num_trades,
             win_rate=win_rate,
             parameters=self.strategy.get_parameters(),
@@ -379,18 +366,3 @@ class SimpleBacktest:
                 return ps
         # default: fully invest initial capital
         return PositionSize(symbol=self._symbol, percentage_of_portfolio=100.0)
-
-    @staticmethod
-    def _max_drawdown(equity_df: pl.DataFrame) -> float:
-        if equity_df.is_empty():
-            return 0.0
-        values = equity_df["TotalEquity"].to_list()
-        peak = values[0]
-        max_dd = 0.0
-        for v in values:
-            if v > peak:
-                peak = v
-            dd = (peak - v) / peak if peak else 0.0
-            if dd > max_dd:
-                max_dd = dd
-        return max_dd

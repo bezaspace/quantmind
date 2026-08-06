@@ -74,3 +74,38 @@ print(result.total_return, result.num_trades, result.max_drawdown)
 - A MA-crossover strategy can be defined and backtested on 5 years of RELIANCE daily data.
 - Parameter sweep over fast/slow periods runs and finds the best combination.
 - 31 unit tests pass.
+
+## Phase 3
+
+The vector backtest engine is in `quantmind/backtesting/`:
+
+- `VectorBacktest` — multi-asset, Polars-first runner
+- `BacktestResult`, `BacktestRun`, `Backtest` — result/configuration objects
+- Supports `PositionSize`, `StopLossRule` (fixed/trailing), `TakeProfitRule` (fixed/trailing), `ScalingRule`, `CooldownRule`, `TradingCost`
+
+```python
+from examples.moving_average_crossover import MovingAverageCrossoverStrategy
+from quantmind.backtesting import VectorBacktest
+from quantmind.data.providers import UpstoxDataProvider
+from quantmind.strategy import ParameterGrid, sweep
+
+df = UpstoxDataProvider().get_ohlcv(
+    "RELIANCE", "day", start="2019-08-06", end="2024-08-06"
+)
+
+def run(strategy):
+    return VectorBacktest(strategy, {"RELIANCE_day": df}).run().total_return
+
+grid = ParameterGrid({
+    "fast_period": range(5, 30, 3),
+    "slow_period": range(35, 95, 5),
+})
+result = sweep(MovingAverageCrossoverStrategy, grid, lambda s: {"total_return": run(s)})
+print(result.best)
+```
+
+## Phase 3 acceptance
+
+- 100 MA-window variants on RELIANCE daily data run in under 10 seconds.
+- Multi-asset and single-asset backtests produce equity curves and trade lists.
+- 36 unit tests pass.

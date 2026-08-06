@@ -92,3 +92,31 @@ Phase 2 — Strategy abstraction (`TradingStrategy`, indicators, parameter sweep
 ### Next
 
 Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
+
+---
+
+## Phase 3 — Vector backtest engine ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/backtesting/`
+  - `result.py` — `BacktestResult`, `BacktestRun`, `Backtest`, and `max_drawdown` helper
+  - `vector.py` — `VectorBacktest` multi-asset bar-by-bar runner with Polars-aligned data
+  - `simple.py` — `SimpleBacktest` (Phase 2 acceptance runner, now reuses `BacktestResult`)
+- `VectorBacktest` supports `PositionSize`, `StopLossRule` (fixed/trailing), `TakeProfitRule` (fixed/trailing), `ScalingRule`, `CooldownRule`/`CooldownTracker`, `TradingCost` (fee + slippage)
+- `quantmind/backtesting/__init__.py` exports `Backtest`, `BacktestResult`, `BacktestRun`, `SimpleBacktest`, `VectorBacktest`
+- `tests/backtesting/test_vector_backtest.py` — long trend, stop loss, take profit, multi-asset, trading costs
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 36/36 passed |
+| MA-crossover on RELIANCE daily (single run) | total return ~75.7%, 13 trades, max drawdown ~25.3% |
+| Parameter sweep over 108 MA-window variants | completed in ~1.2 s, best total return ~155.9% (`fast=5`, `slow=45`) |
+
+### Next
+
+Phase 4 — Metrics and reporting (`BacktestReport`, 30+ metrics).

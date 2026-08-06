@@ -483,12 +483,12 @@ design cut cost X%" is a standout resume line.
 - [x] **Acceptance:** A simple MA-crossover strategy can be defined and backtested on
   5 years of RELIANCE daily data.
 
-### Phase 3 — Vector backtest engine
-- Re-implement a Polars/pandas vectorized backtest engine.
-- Apply position sizing, stop losses, take profits, trailing stops, cooldowns, and costs.
-- Support single-asset and multi-asset strategies.
-- Return a `Backtest` object with runs and per-run metrics.
-- **Acceptance:** Run 100 MA-window variants on one stock in under 10 seconds.
+### Phase 3 — Vector backtest engine ✅
+- [x] Implement a Polars-first multi-asset backtest engine (`quantmind/backtesting/vector.py`).
+- [x] Apply position sizing, stop losses, take profits, trailing stops, cooldowns, and costs.
+- [x] Support single-asset and multi-asset strategies.
+- [x] Return a `BacktestRun` result object (and `Backtest` configuration container).
+- [x] **Acceptance:** Run 100 MA-window variants on one stock in under 10 seconds.
 
 ### Phase 4 — Metrics and reporting
 - Re-implement 30+ metrics: CAGR, Sharpe, Sortino, Calmar, max drawdown, win rate, profit
@@ -681,7 +681,7 @@ engineering — each backed by code you can show and design decisions you can de
 | 0 | Repo, roadmap, reference fork | Done | `ROADMAP.md` created, reference repo forked into org |
 | 1 | Indian market data layer (Upstox + Yahoo, instrument master, OHLCV cache, holidays) | Done | `quantmind/data/` implemented; acceptance passed |
 | 2 | Strategy abstraction (TradingStrategy, indicators, parameter sweep, simple backtest) | Done | `quantmind/domain/strategy.py`, `quantmind/indicators/`, `quantmind/backtesting/simple.py`; MA-crossover on RELIANCE works |
-| 3 | Vector backtest engine | Not started | See §9 Phase 3 |
+| 3 | Vector backtest engine | Done | `quantmind/backtesting/vector.py` + `BacktestRun`; 108 MA variants on RELIANCE in ~1.2 s |
 | 4 | Metrics and reporting (30+ metrics, BacktestReport) | Not started | See §9 Phase 4 |
 | 5 | Event-driven backtest engine (blotter, slippage, Indian cost model) | Not started | See §9 Phase 5 |
 | 6 | Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking) | Not started | See §9 Phase 6 |
@@ -694,10 +694,10 @@ engineering — each backed by code you can show and design decisions you can de
 
 ### Next recommended step
 
-Phase 2 is complete (strategy abstraction, indicators, parameter sweep, and a
-lightweight `SimpleBacktest` runner). Next is **Phase 3** — the vector backtest engine:
-a Polars-first multi-asset backtester with efficient signal handling, position sizing,
-stop losses, take profits, trailing stops, cooldowns, and trading costs.
+Phase 3 is complete (multi-asset vector backtest engine with stop losses, take
+profits, trailing stops, cooldowns, costs, and position sizing). Next is **Phase 4**
+— metrics and reporting: 30+ backtest metrics and a `BacktestReport` object that can
+render equity curves, drawdown charts, monthly heatmaps, and trade tables.
 
 ---
 
