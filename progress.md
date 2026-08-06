@@ -207,6 +207,32 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | `pytest -q` | 73/73 passed |
 | `examples/storage_demo.py` | saved bundle, indexed backtest, queried top momentum symbols, loaded summary + full bundle |
 
+---
+
+## Phase 8 — Agent backend (LLM tools, streaming, approval gates) ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/agent/core.py` — `AgentSession`, `Tool`, `ToolCall`, `ToolResult`, `ApprovalGate`, `AgentEvent`
+- `quantmind/agent/llm.py` — `LLMClient`, `EchoLLM`, `OpenAILLM` (OpenAI-compatible)
+- `quantmind/agent/memory.py` — `InMemoryMemory`
+- `quantmind/agent/tools.py` — `get_ohlcv`, `run_backtest`, `run_pipeline_rank`, `get_metrics`, `save_backtest_bundle`
+- `quantmind/api/main.py` — FastAPI app with `/api/chat`, `/api/chat/stream` (SSE), `/api/approval/{request_id}`, `/health`
+- `examples/agent_server.py` — `uvicorn` bootstrap
+- `tests/agent/test_agent.py`
+- `pyproject.toml` API optional dependencies: `fastapi`, `uvicorn[standard]`, `sse-starlette`
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 83/83 passed |
+| `/health` via TestClient | 200 OK |
+| `/api/chat` and `/api/chat/stream` | returns assistant/events |
+| Approval gate flow | emits `approval_requested` and registers approval |
+
 ### Next
 
-Phase 8 — Agent backend (LLM tools, streaming, approval gates).
+Phase 9 — Chat UI (React + TypeScript + SSE).

@@ -209,3 +209,33 @@ top = RankIndex(index).get_top(date(2024, 8, 6), "momentum", n=10)
 - `Tier1Store` content-addressed storage for DataFrames.
 - `RankIndex` stores and retrieves top-N factor snapshots.
 - 73 unit tests pass.
+
+## Phase 8
+
+Agent backend in `quantmind/api/` and `quantmind/agent/`:
+
+- FastAPI app with `/api/chat`, `/api/chat/stream` (SSE), `/api/approval/{request_id}`, `/health`
+- `AgentSession` with `Tool` registry, `InMemoryMemory`, and approval gates
+- `LLMClient` with `EchoLLM` (fallback/tests) and `OpenAILLM` (OpenAI-compatible)
+- Built-in tools: `get_ohlcv`, `run_backtest`, `run_pipeline_rank`, `get_metrics`, `save_backtest_bundle`
+
+Install API dependencies:
+
+```bash
+pip install -e '.[api]'
+python examples/agent_server.py
+```
+
+```python
+from fastapi.testclient import TestClient
+from quantmind.api.main import app
+client = TestClient(app)
+resp = client.post("/api/chat", json={"message": "Run a backtest on RELIANCE"})
+```
+
+## Phase 8 acceptance
+
+- `/api/chat` returns assistant and tool events.
+- `/api/chat/stream` emits SSE events.
+- Approval gates emit `approval_requested` and can be confirmed via `/api/approval/{request_id}`.
+- 83 unit tests pass.

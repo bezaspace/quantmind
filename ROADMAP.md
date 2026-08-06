@@ -686,7 +686,7 @@ engineering — each backed by code you can show and design decisions you can de
 | 5 | Event-driven backtest engine (blotter, slippage, Indian cost model) | Done | `EventDrivenBacktest`, `ExecutionEngine`, `IndianEquityCostModel` with STT/GST/stamp/SEBI/transaction charges |
 | 6 | Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking) | Done | `Pipeline`, `Factor`, `Filter`, `PipelineEngine`, built-in factors, and `PipelineMomentumStrategy` bridge |
 | 7 | Storage and index (.iafbt bundles, SQLite Tier-1, rank_index) | Done | `BacktestBundle`, `SQLiteIndex`, `RankIndex`, `Tier1Store` in `quantmind/storage/` |
-| 8 | Agent backend (LLM tools, streaming, approval gates) | Not started | See §9 Phase 8 |
+| 8 | Agent backend (LLM tools, streaming, approval gates) | Done | FastAPI app in `quantmind/api/`, `AgentSession`, `Tool` registry, SSE `/api/chat/stream`, approval gates |
 | 9 | Chat UI (React + TS + SSE, inline charts, approval cards) | Not started | See §9 Phase 9 |
 | 10 | Paper trading with Upstox sandbox (OrderExecutor, portfolio, P&L) | Not started | See §9 Phase 10 |
 | 11 | Production hardening (auth, risk controls, audit, disclaimers) | Not started | See §9 Phase 11 |
@@ -694,9 +694,9 @@ engineering — each backed by code you can show and design decisions you can de
 
 ### Next recommended step
 
-Phase 7 is complete (`BacktestBundle`, `SQLiteIndex`, `RankIndex`, and
-`Tier1Store`). Next is **Phase 8** — agent backend: LLM tools, streaming,
-approval gates, and a Python API for the upcoming chat UI.
+Phase 8 is complete (FastAPI agent backend with tools, SSE streaming, and
+approval gates). Next is **Phase 9** — chat UI: React + TypeScript + SSE,
+inline charts, and approval cards.
 
 ---
 

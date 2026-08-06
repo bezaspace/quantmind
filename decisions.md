@@ -164,3 +164,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 33. Content-addressed Tier-1 Parquet store
 - **Decision:** Add `Tier1Store` that stores DataFrames as Parquet files keyed by SHA-256 of the descriptor and content hash.
 - **Rationale:** Content addressing deduplicates repeated OHLCV/factor writes and gives us a stable lookup key to embed in backtest provenance.
+
+---
+
+## 2026-08-06 — Phase 8 (Agent backend)
+
+### 34. FastAPI + SSE agent backend
+- **Decision:** Build the agent backend with FastAPI, exposing `/api/chat`, `/api/chat/stream` (SSE), `/api/approval/{request_id}`, and `/health`. Stream events are JSON payloads over SSE.
+- **Rationale:** The frontend (Phase 9) will consume streaming events and approval cards. SSE is simpler than WebSockets for unidirectional server-to-client updates and works well with React's `EventSource`.
+
+### 35. Pluggable LLM client with echo fallback
+- **Decision:** Define `LLMClient` ABC with `EchoLLM` (testing/no key) and `OpenAILLM` (OpenAI-compatible) implementations. The agent uses `OPENAI_API_KEY` when present and falls back to echo otherwise.
+- **Rationale:** This lets the backend be exercised in tests and demos without a live API key while supporting real LLM calls in production.
+
+### 36. Tool registry and approval gates
+- **Decision:** Tools are `Tool` objects registered on `AgentSession`. Tools that mutate state (e.g. `save_backtest_bundle`) require approval. The API emits `approval_requested` events and accepts approvals via `/api/approval/{request_id}`.
+- **Rationale:** Human-in-the-loop control for file-writing or order-related actions is a safety primitive; making approval gates explicit keeps the contract clear between agent, UI, and user.
