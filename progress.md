@@ -138,6 +138,28 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | `pytest -q` | 54/54 passed |
 | MA-crossover `BacktestReport` | generated HTML, JSON, and Markdown with equity curve, drawdown, 42 metrics, trade table, and monthly-returns heatmap |
 
+---
+
+## Phase 5 — Event-driven backtest engine and Indian cost model ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/domain/order.py` — `Order`, `OrderSide`, `OrderType`, `OrderStatus`
+- `quantmind/backtesting/blotter.py` — `ExecutionEngine`, `Portfolio`, `Position`, `Fill`
+- `quantmind/backtesting/costs.py` — `IndianEquityCostModel` with brokerage, STT, stamp duty, transaction charges, SEBI charges, GST, and slippage
+- `quantmind/backtesting/event_driven.py` — `EventDrivenBacktest` bar-by-bar runner supporting MARKET, LIMIT, STOP, and STOP_LIMIT orders with one-bar market-fill delay
+- `examples/event_driven_backtest.py` — MA-crossover with Indian cost model
+- `tests/backtesting/test_event_driven.py` — market order, limit fill, stop fill, cost model, long-only enforcement
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 59/59 passed |
+| MA-crossover on RELIANCE daily (event-driven) | total return ~74.0%, max drawdown ~23.5%, 12 trades, 50% win rate |
+
 ### Next
 
-Phase 5 — Event-driven backtest engine and Indian cost model.
+Phase 6 — Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking).

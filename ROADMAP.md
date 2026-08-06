@@ -683,7 +683,7 @@ engineering — each backed by code you can show and design decisions you can de
 | 2 | Strategy abstraction (TradingStrategy, indicators, parameter sweep, simple backtest) | Done | `quantmind/domain/strategy.py`, `quantmind/indicators/`, `quantmind/backtesting/simple.py`; MA-crossover on RELIANCE works |
 | 3 | Vector backtest engine | Done | `quantmind/backtesting/vector.py` + `BacktestRun`; 108 MA variants on RELIANCE in ~1.2 s |
 | 4 | Metrics and reporting (30+ metrics, BacktestReport) | Done | `quantmind/metrics/` + `BacktestReport`; 42+ metrics, HTML/Markdown/JSON output |
-| 5 | Event-driven backtest engine (blotter, slippage, Indian cost model) | Not started | See §9 Phase 5 |
+| 5 | Event-driven backtest engine (blotter, slippage, Indian cost model) | Done | `EventDrivenBacktest`, `ExecutionEngine`, `IndianEquityCostModel` with STT/GST/stamp/SEBI/transaction charges |
 | 6 | Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking) | Not started | See §9 Phase 6 |
 | 7 | Storage and index (.iafbt bundles, SQLite Tier-1, rank_index) | Not started | See §9 Phase 7 |
 | 8 | Agent backend (LLM tools, streaming, approval gates) | Not started | See §9 Phase 8 |
@@ -694,10 +694,9 @@ engineering — each backed by code you can show and design decisions you can de
 
 ### Next recommended step
 
-Phase 4 is complete (30+ metrics library and `BacktestReport` with HTML,
-Markdown, and JSON output). Next is **Phase 5** — event-driven backtest engine:
-order blotter, Indian-specific cost model (brokerage, STT, GST, stamp duty,
-SEBI charges, transaction charges), slippage, and realistic fill simulation.
+Phase 5 is complete (`EventDrivenBacktest` with `ExecutionEngine` and
+`IndianEquityCostModel`). Next is **Phase 6** — cross-sectional pipelines:
+`Pipeline`, `Factor`, `Filter`, and universe ranking for multi-asset selection.
 
 ---
 

@@ -130,3 +130,25 @@ main()
 - `BacktestReport` renders a full HTML/Markdown/JSON report for the MA-crossover backtest.
 - 30+ metrics computed, including closed-form verified CAGR, drawdown, and profit factor.
 - 54 unit tests pass.
+
+## Phase 5
+
+The event-driven backtest engine is in `quantmind/backtesting/`:
+
+- `EventDrivenBacktest` — bar-by-bar runner with `ExecutionEngine`/`Blotter` and `Portfolio` tracking
+- `Order`, `OrderSide`, `OrderType`, `OrderStatus` in `quantmind/domain/order.py`
+- `IndianEquityCostModel` with brokerage, STT, stamp duty, transaction charges, SEBI charges, GST, and slippage
+- Supports `MARKET`, `LIMIT`, `STOP`, and `STOP_LIMIT` orders with one-bar market-fill delay
+
+```python
+from quantmind.backtesting import EventDrivenBacktest, IndianEquityCostModel
+
+cost_model = IndianEquityCostModel(brokerage_flat=20.0, slippage_pct=0.05)
+result = EventDrivenBacktest(strategy, {"RELIANCE_day": df}, cost_model=cost_model).run()
+```
+
+## Phase 5 acceptance
+
+- `EventDrivenBacktest` runs the MA-crossover strategy with realistic Indian CNC costs.
+- `ExecutionEngine` fills market, limit, and stop orders correctly in unit tests.
+- 59 unit tests pass.

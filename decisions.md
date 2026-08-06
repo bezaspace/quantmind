@@ -116,3 +116,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 24. Hand-calculated metric tests
 - **Decision:** Add `tests/metrics/test_metrics.py` with closed-form checks for `total_return`, `cagr`, `max_drawdown`, `sharpe`, `profit_factor`, `win_rate`, and `monthly_heatmap`.
 - **Rationale:** Metrics must be trustworthy. Closed-form tests guarantee that popular metrics like CAGR and drawdown are computed exactly as users would calculate them by hand.
+
+---
+
+## 2026-08-06 — Phase 5 (Event-driven backtest engine)
+
+### 25. Separate `EventDrivenBacktest` with explicit order objects
+- **Decision:** Add `EventDrivenBacktest` next to `VectorBacktest`, using `Order`, `ExecutionEngine`, `Portfolio`, and `Position` objects.
+- **Rationale:** Event-driven execution is useful for realistic fill simulation, limit/stop orders, and one-bar slippage. A separate class keeps the fast vector engine available for parameter sweeps while the event engine handles precise order semantics.
+
+### 26. Indian-equity delivery cost model
+- **Decision:** Implement `IndianEquityCostModel` with STT (sell only), stamp duty (buy only), transaction charges, SEBI turnover fee, GST on brokerage + transaction charges, configurable brokerage, and slippage.
+- **Rationale:** Backtests for Indian CNC delivery must account for multiple regulatory/tax costs. Encapsulating them in one model makes it easy to swap defaults and audit total transaction cost per fill.
+
+### 27. One-bar market-order delay
+- **Decision:** Market orders generated at the close of bar `t` are filled at the open of bar `t+1`.
+- **Rationale:** Prevents lookahead bias. The strategy only sees bar `t` data when deciding; the actual fill occurs on the next bar's open, which is the earliest realistic price.
