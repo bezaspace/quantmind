@@ -685,7 +685,7 @@ engineering — each backed by code you can show and design decisions you can de
 | 4 | Metrics and reporting (30+ metrics, BacktestReport) | Done | `quantmind/metrics/` + `BacktestReport`; 42+ metrics, HTML/Markdown/JSON output |
 | 5 | Event-driven backtest engine (blotter, slippage, Indian cost model) | Done | `EventDrivenBacktest`, `ExecutionEngine`, `IndianEquityCostModel` with STT/GST/stamp/SEBI/transaction charges |
 | 6 | Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking) | Done | `Pipeline`, `Factor`, `Filter`, `PipelineEngine`, built-in factors, and `PipelineMomentumStrategy` bridge |
-| 7 | Storage and index (.iafbt bundles, SQLite Tier-1, rank_index) | Not started | See §9 Phase 7 |
+| 7 | Storage and index (.iafbt bundles, SQLite Tier-1, rank_index) | Done | `BacktestBundle`, `SQLiteIndex`, `RankIndex`, `Tier1Store` in `quantmind/storage/` |
 | 8 | Agent backend (LLM tools, streaming, approval gates) | Not started | See §9 Phase 8 |
 | 9 | Chat UI (React + TS + SSE, inline charts, approval cards) | Not started | See §9 Phase 9 |
 | 10 | Paper trading with Upstox sandbox (OrderExecutor, portfolio, P&L) | Not started | See §9 Phase 10 |
@@ -694,10 +694,9 @@ engineering — each backed by code you can show and design decisions you can de
 
 ### Next recommended step
 
-Phase 6 is complete (`Pipeline`, `Factor`, `Filter`, `PipelineEngine`, and a
-`TradingStrategy` bridge for pipeline-ranked universes). Next is **Phase 7** —
-storage and indexing: `.iafbt` bundles / SQLite Tier-1 storage and a
-`rank_index` for fast historical factor lookups.
+Phase 7 is complete (`BacktestBundle`, `SQLiteIndex`, `RankIndex`, and
+`Tier1Store`). Next is **Phase 8** — agent backend: LLM tools, streaming,
+approval gates, and a Python API for the upcoming chat UI.
 
 ---
 

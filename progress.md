@@ -186,6 +186,27 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | Pipeline momentum universe (10 synthetic symbols, top-1) | total return ~98.2%, 1 trade, max drawdown 0% |
 | Cross-sectional `rank`, `top` filter, `zscore`, `demean`, arithmetic, groups, universe mask | all verified in tests |
 
+---
+
+## Phase 7 — Storage and indexing ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/storage/bundle.py` — `save_bundle` / `load_bundle` for `.iafbt` (zip with JSON metadata + Parquet blobs), `summary_only` support
+- `quantmind/storage/tier1.py` — content-addressed `Tier1Store` for OHLCV/factor DataFrames
+- `quantmind/storage/index.py` — `SQLiteIndex` for backtest runs and factor snapshots, plus `RankIndex` top-N queries
+- `examples/storage_demo.py` — saves a RELIANCE bundle, indexes it, queries rank index
+- `tests/storage/test_storage.py`
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 73/73 passed |
+| `examples/storage_demo.py` | saved bundle, indexed backtest, queried top momentum symbols, loaded summary + full bundle |
+
 ### Next
 
-Phase 7 — Storage and indexing.
+Phase 8 — Agent backend (LLM tools, streaming, approval gates).

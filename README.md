@@ -182,3 +182,30 @@ result = run_pipeline(panel, MomentumPipeline)
 - Pipeline ranks a 10-symbol synthetic universe by momentum and the top pick is backtested via `VectorBacktest`.
 - `rank`, `top`, `zscore`, `demean`, arithmetic, groups, and universe mask are tested.
 - 67 unit tests pass.
+
+## Phase 7
+
+Storage and indexing layer in `quantmind/storage/`:
+
+- `.iafbt` backtest bundles (`save_bundle` / `load_bundle`) — ZIP archives with JSON metadata and Parquet blobs
+- `Tier1Store` — content-addressed Parquet store for OHLCV/factor DataFrames
+- `SQLiteIndex` — index backtest runs and factor snapshots
+- `RankIndex` — query top-N ranked symbols for a factor on a given date
+
+```python
+from quantmind.storage import save_bundle, load_bundle, SQLiteIndex, RankIndex
+
+bundle_path = save_bundle("reliance_ma", result)
+summary = load_bundle(bundle_path, summary_only=True)
+
+index = SQLiteIndex()
+index.insert_backtest(bundle_path, result, strategy_id="...", symbols=["RELIANCE"])
+top = RankIndex(index).get_top(date(2024, 8, 6), "momentum", n=10)
+```
+
+## Phase 7 acceptance
+
+- Backtest bundle round-trips (`BacktestResult` and `BacktestRun`) with summary-only loading.
+- `Tier1Store` content-addressed storage for DataFrames.
+- `RankIndex` stores and retrieves top-N factor snapshots.
+- 73 unit tests pass.

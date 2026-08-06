@@ -148,3 +148,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 30. Pipeline-to-strategy bridge
 - **Decision:** Add `PipelineMomentumStrategy` in `quantmind/pipeline/strategy_bridge.py` that converts a `Pipeline` ranking into per-symbol boolean buy/sell signals consumable by `VectorBacktest`.
 - **Rationale:** Phases 1–5 already had a stable backtest/strategy API. A thin bridge lets pipeline-ranked universes plug directly into the existing `VectorBacktest` without changing the backtest engine.
+
+---
+
+## 2026-08-06 — Phase 7 (Storage and indexing)
+
+### 31. `.iafbt` bundle = zip + JSON + Parquet blobs
+- **Decision:** Implement backtest bundles as ZIP archives containing `metadata.json` plus Parquet blobs for `equity_curve` and `trades`. `summary_only=True` reads only the JSON metadata without loading Parquet.
+- **Rationale:** No `msgpack`/`zstandard` dependencies are installed, and a zip-with-JSON format is trivial to inspect with standard tools while still deferring heavy series to Parquet.
+
+### 32. SQLite Tier-1 index for backtest runs and factor snapshots
+- **Decision:** Add `SQLiteIndex` with `backtest_runs` and `factor_snapshots` tables, and a `RankIndex` helper for top-N factor queries.
+- **Rationale:** A small local SQLite index is enough to track hundreds of backtests and daily factor snapshots, supports fast date/factor lookups, and avoids extra server dependencies.
+
+### 33. Content-addressed Tier-1 Parquet store
+- **Decision:** Add `Tier1Store` that stores DataFrames as Parquet files keyed by SHA-256 of the descriptor and content hash.
+- **Rationale:** Content addressing deduplicates repeated OHLCV/factor writes and gives us a stable lookup key to embed in backtest provenance.
