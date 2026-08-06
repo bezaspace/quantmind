@@ -272,3 +272,29 @@ Then open `http://localhost:5173`.
 - `frontend/dist/` is generated.
 - UI components render assistant messages, tool results, `ApprovalCard`, and `ResultChart`.
 - 83 unit tests pass.
+
+## Phase 10
+
+Paper trading in `quantmind/broker/`:
+
+- `UpstoxBrokerClient` — sync Upstox v2 order client with paper-trading fallback
+- `PaperTradingExecutor` — fills orders against market data with `IndianEquityCostModel`
+- `PortfolioTracker` / `Position` / `PnL` — live portfolio and P&L tracking
+- Agent tools: `place_paper_order`, `get_paper_portfolio`, `get_paper_pnl`
+
+```python
+from quantmind.broker import OrderRequest, OrderSide, OrderType, PaperTradingExecutor
+
+executor = PaperTradingExecutor(initial_capital=1_000_000)
+order = executor.place_order(OrderRequest(
+    symbol="RELIANCE", side=OrderSide.BUY, order_type=OrderType.MARKET, quantity=10
+))
+print(executor.summary())
+```
+
+## Phase 10 acceptance
+
+- `examples/paper_trading.py` places a CNC market buy on RELIANCE and prints portfolio/PnL.
+- `UpstoxBrokerClient` paper mode simulates orders without live credentials.
+- Agent tools `place_paper_order` (approval-gated), `get_paper_portfolio`, and `get_paper_pnl` are available.
+- 89 unit tests pass.

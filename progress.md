@@ -258,6 +258,29 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | `npm run build` (frontend) | passes TypeScript check and Vite build |
 | Build artifacts | `frontend/dist/` generated |
 
+---
+
+## Phase 10 — Paper trading with Upstox sandbox ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/broker/order.py` — `OrderRequest`, `OrderResponse`, `OrderSide`, `OrderType`, `OrderStatus`
+- `quantmind/broker/portfolio.py` — `PortfolioTracker`, `Position`, `PnL`
+- `quantmind/broker/upstox_client.py` — `UpstoxBrokerClient` with paper-trading fallback and live Upstox v2 order endpoints
+- `quantmind/broker/executor.py` — `PaperTradingExecutor` that fills orders against market data with `IndianEquityCostModel`
+- `examples/paper_trading.py` — places a CNC market buy on RELIANCE and prints portfolio summary
+- `quantmind/agent/tools.py` — added `place_paper_order`, `get_paper_portfolio`, `get_paper_pnl` agent tools
+- `tests/broker/test_broker.py`
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 89/89 passed |
+| `examples/paper_trading.py` | placed paper buy for 10 RELIANCE shares, computed cash/positions/PnL with Indian CNC costs |
+
 ### Next
 
-Phase 10 — Paper trading with Upstox sandbox.
+Phase 11 — Production hardening (auth, risk controls, audit, disclaimers).

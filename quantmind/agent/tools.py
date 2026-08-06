@@ -9,6 +9,8 @@ from typing import Any, Dict
 import polars as pl
 
 from ..backtesting import VectorBacktest
+from ..broker import OrderRequest, OrderSide, OrderType, PaperTradingExecutor
+from ..broker.upstox_client import UpstoxBrokerClient
 from ..data.providers import UpstoxDataProvider
 from ..pipeline import run_pipeline
 from ..pipeline.factors.builtin import Latest, Returns
@@ -134,6 +136,96 @@ async def get_metrics(equity_curve_json: str) -> ToolResult:
         return ToolResult(False, None, str(exc))
 
 
+_PAPER_EXECUTOR: PaperTradingExecutor | None = None
+
+
+def _get_paper_executor() -> PaperTradingExecutor:
+    global _PAPER_EXECUTOR
+    if _PAPER_EXECUTOR is None:
+        _PAPER_EXECUTOR = PaperTradingExecutor(
+            initial_capital=1_000_000.0,
+            client=UpstoxBrokerClient(paper=True),
+        )
+    return _PAPER_EXECUTOR
+
+
+async def place_paper_order(
+    symbol: str,
+    side: str,
+    quantity: float,
+    order_type: str = "MARKET",
+    price: float = 0.0,
+    product: str = "CNC",
+) -> ToolResult:
+    """Place a paper order on the Upstox sandbox (or local simulation if no credentials)."""
+    try:
+        executor = _get_paper_executor()
+        req = OrderRequest(
+            symbol=symbol,
+            side=OrderSide(side.upper()),
+            order_type=OrderType(order_type.upper()),
+            quantity=float(quantity),
+            price=float(price) if price else None,
+            product=product,
+        )
+        order = executor.place_order(req)
+        # In paper mode, immediately try to fill against the latest close price
+        from datetime import datetime
+
+        prices = executor._latest_prices([symbol])
+        if prices:
+            executor.process_market(datetime.utcnow(), prices)
+
+        return ToolResult(
+            True,
+            {
+                "order_id": order.order_id,
+                "status": order.status.value,
+                "symbol": order.symbol,
+                "side": order.side.value,
+                "quantity": order.quantity,
+            },
+        )
+    except Exception as exc:
+        logger.exception("place_paper_order failed")
+        return ToolResult(False, None, str(exc))
+
+
+async def get_paper_portfolio() -> ToolResult:
+    """Return the current paper trading portfolio summary."""
+    try:
+        executor = _get_paper_executor()
+        summary = executor.summary()
+        return ToolResult(True, summary)
+    except Exception as exc:
+        logger.exception("get_paper_portfolio failed")
+        return ToolResult(False, None, str(exc))
+
+
+async def get_paper_pnl(symbols: str = "") -> ToolResult:
+    """Return paper trading P&L for the given comma-separated symbols."""
+    try:
+        executor = _get_paper_executor()
+        symbol_list = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+        if not symbol_list:
+            symbol_list = list(executor.portfolio.positions.keys())
+        prices = executor._latest_prices(symbol_list)
+        pnl = executor.get_pnl(prices)
+        return ToolResult(
+            True,
+            {
+                "realized": pnl.realized,
+                "unrealized": pnl.unrealized,
+                "fees": pnl.fees,
+                "total": pnl.total,
+                "prices": prices,
+            },
+        )
+    except Exception as exc:
+        logger.exception("get_paper_pnl failed")
+        return ToolResult(False, None, str(exc))
+
+
 async def save_backtest_bundle(path: str, result_json: str) -> ToolResult:
     """Save a backtest result as an .iafbt bundle."""
     try:
@@ -214,6 +306,44 @@ TOOLS = [
             "required": ["equity_curve_json"],
         },
         handler=get_metrics,
+    ),
+    Tool(
+        name="place_paper_order",
+        description="Place a paper trading order (Upstox sandbox / local simulation).",
+        parameters={
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string"},
+                "side": {"type": "string", "enum": ["BUY", "SELL"]},
+                "quantity": {"type": "number"},
+                "order_type": {"type": "string", "enum": ["MARKET", "LIMIT", "STOP"], "default": "MARKET"},
+                "price": {"type": "number", "default": 0},
+                "product": {"type": "string", "default": "CNC"},
+            },
+            "required": ["symbol", "side", "quantity"],
+        },
+        handler=place_paper_order,
+        requires_approval=True,
+    ),
+    Tool(
+        name="get_paper_portfolio",
+        description="Return the current paper trading portfolio summary.",
+        parameters={
+            "type": "object",
+            "properties": {},
+        },
+        handler=get_paper_portfolio,
+    ),
+    Tool(
+        name="get_paper_pnl",
+        description="Return paper trading P&L for the given comma-separated symbols.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "symbols": {"type": "string", "default": ""},
+            },
+        },
+        handler=get_paper_pnl,
     ),
     Tool(
         name="save_backtest_bundle",

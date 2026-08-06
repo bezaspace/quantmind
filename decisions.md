@@ -192,3 +192,19 @@ A running record of important design and implementation decisions. Keep entries 
 ### 38. Vite dev proxy to backend
 - **Decision:** Configure `vite.config.ts` to proxy `/api` to `http://localhost:8000` and add CORS to the FastAPI app.
 - **Rationale:** This lets `npm run dev` serve the UI and talk to the Python backend without cross-origin issues during local development.
+
+---
+
+## 2026-08-06 — Phase 10 (Paper trading)
+
+### 39. `UpstoxBrokerClient` with paper fallback
+- **Decision:** Implement a sync `httpx`-based Upstox v2 broker client (`place_order`, `cancel_order`, `get_order_history`, `get_positions`, `get_funds`) that falls back to local paper simulation when no `UPSTOX_ACCESS_TOKEN` is configured.
+- **Rationale:** The `UPSTOX_ANALYTICS_TOKEN` available in the environment is read-only. Paper mode lets us build and test order execution, portfolio tracking, and P&L without live credentials or real trades.
+
+### 40. `PaperTradingExecutor` fills orders against market data with Indian costs
+- **Decision:** `PaperTradingExecutor` uses `UpstoxDataProvider` for current prices, `IndianEquityCostModel` for brokerage/taxes/STT, and a `PortfolioTracker` to maintain cash, positions, realized/unrealized PnL, and fees.
+- **Rationale:** Paper trades must be realistic enough to validate strategy signal-to-execution logic while staying fully simulated.
+
+### 41. Agent tools for paper trading
+- **Decision:** Expose `place_paper_order`, `get_paper_portfolio`, and `get_paper_pnl` to the agent. `place_paper_order` requires approval before execution.
+- **Rationale:** The chat UI can now trigger and monitor simulated live trades through the same SSE/agent flow used for backtests and data queries.
