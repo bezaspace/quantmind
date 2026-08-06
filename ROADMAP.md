@@ -689,14 +689,15 @@ engineering — each backed by code you can show and design decisions you can de
 | 8 | Agent backend (LLM tools, streaming, approval gates) | Done | FastAPI app in `quantmind/api/`, `AgentSession`, `Tool` registry, SSE `/api/chat/stream`, approval gates |
 | 9 | Chat UI (React + TS + SSE, inline charts, approval cards) | Done | Vite + React + TypeScript frontend in `frontend/`, EventSource SSE, `ApprovalCard`, `ResultChart` |
 | 10 | Paper trading with Upstox sandbox (OrderExecutor, portfolio, P&L) | Done | `UpstoxBrokerClient`, `PaperTradingExecutor`, `PortfolioTracker`, agent `place_paper_order` / `get_paper_portfolio` / `get_paper_pnl` tools |
-| 11 | Production hardening (auth, risk controls, audit, disclaimers) | Not started | See §9 Phase 11 |
+| 11 | Production hardening (auth, risk controls, audit, disclaimers) | Done | `Settings`, `require_api_key`, rate limiting, `AuditLogger`, `RiskController`, `/api/disclaimer`, `Dockerfile`, `docker-compose.yml`, `fly.toml` |
 | 12 | Future expansion (intraday, more brokers, F&O) | Not started | See §9 Phase 12 |
 
 ### Next recommended step
 
-Phase 10 is complete (`UpstoxBrokerClient`, `PaperTradingExecutor`, and
-agent paper-trading tools). Next is **Phase 11** — production hardening:
-auth, risk controls, audit logging, disclaimers, and deployment helpers.
+Phase 11 is complete (auth, rate limiting, audit logging, risk controls,
+disclaimers, and Docker/Fly/Heroku deployment helpers). Next is
+**Phase 12** — future expansion: intraday execution, more brokers, and
+F&O support.
 
 ---
 

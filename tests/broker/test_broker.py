@@ -13,6 +13,7 @@ from quantmind.broker import (
     Position,
 )
 from quantmind.broker.upstox_client import UpstoxBrokerClient
+from quantmind.risk import RiskController
 
 
 def test_paper_order_lifecycle():
@@ -112,3 +113,39 @@ def test_paper_executor_sell_realized_pnl():
     executor.process_market(datetime.utcnow(), {"RELIANCE": 2600.0})
     pnl = executor.get_pnl({"RELIANCE": 2600.0})
     assert pnl.realized > 0
+
+
+def test_risk_controller_blocks_short_selling():
+    from quantmind.risk import RiskController
+
+    ctrl = RiskController(long_only=True)
+    result = ctrl.check_order("RELIANCE", "SELL", 5, "CNC", current_position=0)
+    assert not result.allowed
+    assert "Long-only" in result.reasons[0]
+
+
+def test_risk_controller_allows_buy():
+    from quantmind.risk import RiskController
+
+    ctrl = RiskController(max_order_quantity=100)
+    result = ctrl.check_order("RELIANCE", "BUY", 5, "CNC")
+    assert result.allowed
+    assert not result.reasons
+
+
+def test_executor_rejects_order_risk():
+    executor = PaperTradingExecutor(
+        initial_capital=1_000_000.0,
+        client=UpstoxBrokerClient(paper=True),
+        risk_controller=RiskController(long_only=True),
+    )
+    order = executor.place_order(
+        OrderRequest(
+            symbol="RELIANCE",
+            side=OrderSide.SELL,
+            order_type=OrderType.MARKET,
+            quantity=10,
+        )
+    )
+    assert order.status == OrderStatus.REJECTED
+    assert "Long-only" in (order.message or "")

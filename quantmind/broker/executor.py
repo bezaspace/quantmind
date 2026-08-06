@@ -11,6 +11,7 @@ import polars as pl
 
 from ..backtesting.costs import IndianEquityCostModel
 from ..data.providers import UpstoxDataProvider
+from ..risk import RiskController
 from .order import OrderRequest, OrderResponse, OrderSide, OrderStatus, OrderType
 from .portfolio import PnL, PortfolioTracker, Position
 from .upstox_client import UpstoxBrokerClient
@@ -38,6 +39,7 @@ class PaperTradingExecutor:
     )
     client: Optional[UpstoxBrokerClient] = None
     data_provider: Optional[UpstoxDataProvider] = None
+    risk_controller: RiskController = field(default_factory=RiskController)
 
     def __post_init__(self) -> None:
         if self.client is None:
@@ -50,6 +52,24 @@ class PaperTradingExecutor:
         self.fills: List[Fill] = []
 
     def place_order(self, request: OrderRequest) -> OrderResponse:
+        current_position = self.portfolio.position(request.symbol).quantity
+        check = self.risk_controller.check_order(
+            symbol=request.symbol,
+            side=request.side.value,
+            quantity=request.quantity,
+            product=request.product,
+            current_position=current_position,
+        )
+        if not check.allowed:
+            return OrderResponse(
+                order_id="",
+                status=OrderStatus.REJECTED,
+                symbol=request.symbol,
+                side=request.side,
+                order_type=request.order_type,
+                quantity=request.quantity,
+                message="; ".join(check.reasons),
+            )
         response = self.client.place_order(request)
         if response.status in (OrderStatus.OPEN, OrderStatus.PENDING):
             self.pending_orders[response.order_id] = response

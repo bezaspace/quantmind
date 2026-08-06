@@ -208,3 +208,23 @@ A running record of important design and implementation decisions. Keep entries 
 ### 41. Agent tools for paper trading
 - **Decision:** Expose `place_paper_order`, `get_paper_portfolio`, and `get_paper_pnl` to the agent. `place_paper_order` requires approval before execution.
 - **Rationale:** The chat UI can now trigger and monitor simulated live trades through the same SSE/agent flow used for backtests and data queries.
+
+---
+
+## 2026-08-06 — Phase 11 (Production hardening)
+
+### 42. API key auth with opt-out
+- **Decision:** Add `require_api_key` dependency supporting `Authorization: Bearer <key>` or `X-API-Key`. It is disabled by default (`QUANTMIND_REQUIRE_AUTH=false`) so local dev and tests still work, but can be enabled with `QUANTMIND_REQUIRE_AUTH=true` and `QUANTMIND_API_KEY`.
+- **Rationale:** Self-hosted deployments need a simple gate; keeping it opt-out lets the current local workflow keep working.
+
+### 43. Request audit logging with redaction
+- **Decision:** `AuditMiddleware` writes every non-static request to a SQLite `audit_log` table. Payloads are redacted for keys like `api_key`, `token`, and `authorization`; only a SHA-256 hash of the original payload is stored.
+- **Rationale:** We need a tamper-evident record of agent actions and order requests without storing secrets in plain text.
+
+### 44. `RiskController` for order gates
+- **Decision:** Centralize production risk checks in `RiskController`: max order quantity, max daily loss %, allowed product list, and long-only enforcement.
+- **Rationale:** Prevents the agent or a malformed request from exceeding basic trading guardrails before an order reaches the broker.
+
+### 45. Container and platform deployment helpers
+- **Decision:** Provide `Dockerfile`, `docker-compose.yml`, `fly.toml`, `Procfile`, and `scripts/deploy.sh` so the backend can be deployed to Fly.io, Heroku, or any Docker host.
+- **Rationale:** The project is no longer just a local script; explicit deployment artifacts lower friction for hosting the API.

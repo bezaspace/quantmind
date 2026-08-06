@@ -281,6 +281,32 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | `pytest -q` | 89/89 passed |
 | `examples/paper_trading.py` | placed paper buy for 10 RELIANCE shares, computed cash/positions/PnL with Indian CNC costs |
 
+---
+
+## Phase 11 — Production hardening (auth, risk controls, audit, disclaimers) ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `quantmind/config.py` — Pydantic `Settings` with env-var validation
+- `quantmind/api/auth.py` — `require_api_key` dependency (Bearer / X-API-Key)
+- `quantmind/api/middleware.py` — `AuditMiddleware` logs every request
+- `quantmind/audit/logger.py` — SQLite append-only audit log with redaction
+- `quantmind/risk/controls.py` — `RiskController` for order quantity, daily loss, allowed products, long-only
+- `quantmind/api/main.py` — integrated rate limiting (`slowapi`), disclaimer endpoint, `/api/audit/query`
+- `Dockerfile`, `docker-compose.yml`, `fly.toml`, `Procfile`, `.env.example`, `scripts/deploy.sh`
+- `tests/api/test_production.py`, `tests/broker` risk tests
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 97/97 passed |
+| `/api/disclaimer` | returns SEBI-style disclaimer text |
+| `/api/audit/query` | returns redacted audit rows |
+| `RiskController` | blocks short selling in long-only mode |
+
 ### Next
 
-Phase 11 — Production hardening (auth, risk controls, audit, disclaimers).
+Phase 12 — Future expansion (intraday execution, more brokers, F&O).

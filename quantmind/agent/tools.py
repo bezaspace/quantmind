@@ -8,13 +8,16 @@ from typing import Any, Dict
 
 import polars as pl
 
+from ..audit import get_audit_logger
 from ..backtesting import VectorBacktest
 from ..broker import OrderRequest, OrderSide, OrderType, PaperTradingExecutor
 from ..broker.upstox_client import UpstoxBrokerClient
+from ..config import get_settings
 from ..data.providers import UpstoxDataProvider
 from ..pipeline import run_pipeline
 from ..pipeline.factors.builtin import Latest, Returns
 from ..pipeline.panel import dict_to_long_form
+from ..risk import RiskController
 from ..storage import save_bundle
 from .core import Tool, ToolResult
 
@@ -142,9 +145,16 @@ _PAPER_EXECUTOR: PaperTradingExecutor | None = None
 def _get_paper_executor() -> PaperTradingExecutor:
     global _PAPER_EXECUTOR
     if _PAPER_EXECUTOR is None:
+        settings = get_settings()
         _PAPER_EXECUTOR = PaperTradingExecutor(
             initial_capital=1_000_000.0,
             client=UpstoxBrokerClient(paper=True),
+            risk_controller=RiskController(
+                max_order_quantity=settings.max_order_quantity,
+                max_daily_loss_pct=settings.max_daily_loss_pct,
+                allowed_products=settings.allowed_products.split(","),
+                long_only=True,
+            ),
         )
     return _PAPER_EXECUTOR
 
@@ -176,6 +186,23 @@ async def place_paper_order(
         if prices:
             executor.process_market(datetime.utcnow(), prices)
 
+        audit = get_audit_logger()
+        audit.log(
+            action="place_paper_order",
+            payload={
+                "symbol": symbol,
+                "side": side,
+                "quantity": quantity,
+                "order_type": order_type,
+                "status": order.status.value,
+                "order_id": order.order_id,
+                "message": order.message,
+            },
+        )
+
+        if order.status not in (OrderStatus.COMPLETE, OrderStatus.OPEN):
+            return ToolResult(False, None, order.message or "Order rejected")
+
         return ToolResult(
             True,
             {
@@ -184,6 +211,7 @@ async def place_paper_order(
                 "symbol": order.symbol,
                 "side": order.side.value,
                 "quantity": order.quantity,
+                "message": order.message,
             },
         )
     except Exception as exc:

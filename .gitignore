@@ -8,3 +8,6 @@ __pycache__/
 node_modules/
 frontend/dist/
 *.iafbt
+*.db
+*.sqlite
+*.sqlite3

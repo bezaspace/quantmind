@@ -298,3 +298,38 @@ print(executor.summary())
 - `UpstoxBrokerClient` paper mode simulates orders without live credentials.
 - Agent tools `place_paper_order` (approval-gated), `get_paper_portfolio`, and `get_paper_pnl` are available.
 - 89 unit tests pass.
+
+## Phase 11
+
+Production hardening:
+
+- `quantmind/config.py` — Pydantic `Settings` from environment variables
+- `quantmind/api/auth.py` — API key dependency (`Bearer` or `X-API-Key`), opt-in via `QUANTMIND_REQUIRE_AUTH`
+- `quantmind/audit/logger.py` — SQLite append-only audit log with automatic secret redaction
+- `quantmind/risk/controls.py` — `RiskController` enforcing quantity, product, daily-loss, and long-only rules
+- `quantmind/api/main.py` — `slowapi` rate limiting, `/api/disclaimer`, `/api/audit/query`
+- `Dockerfile`, `docker-compose.yml`, `fly.toml`, `Procfile`, `scripts/deploy.sh`, `.env.example`
+
+```bash
+# local with auth and audit
+cp .env.example .env
+# edit QUANTMIND_API_KEY and QUANTMIND_REQUIRE_AUTH=true
+. .venv/bin/activate
+python examples/agent_server.py
+```
+
+```bash
+# Docker
+docker compose up --build
+
+# Fly.io (requires flyctl)
+export FLY_APP_NAME=quantmind
+./scripts/deploy.sh
+```
+
+## Phase 11 acceptance
+
+- `/api/disclaimer` returns a SEBI-style disclaimer.
+- `AuditMiddleware` logs requests; `/api/audit/query` returns redacted rows.
+- `RiskController` blocks short selling in long-only mode and rejects oversize orders.
+- `pytest -q` passes 97 unit tests.

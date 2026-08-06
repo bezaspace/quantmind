@@ -87,6 +87,7 @@ class AgentSession:
     tools: Dict[str, Tool] = field(default_factory=dict)
     max_turns: int = 5
     auto_approve: bool = False
+    session_id: str = ""
 
     def __post_init__(self) -> None:
         self._pending_approvals: Dict[str, ApprovalGate] = {}
