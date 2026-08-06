@@ -239,3 +239,36 @@ resp = client.post("/api/chat", json={"message": "Run a backtest on RELIANCE"})
 - `/api/chat/stream` emits SSE events.
 - Approval gates emit `approval_requested` and can be confirmed via `/api/approval/{request_id}`.
 - 83 unit tests pass.
+
+## Phase 9
+
+React + TypeScript chat UI in `frontend/`:
+
+- Vite project with `EventSource` SSE streaming
+- Chat interface with user/assistant messages, tool results, and inline `recharts` visualizations
+- `ApprovalCard` component for human-in-the-loop approvals
+- `vite.config.ts` proxies `/api` to `http://localhost:8000`
+- Backend CORS enabled for local development
+
+Run the full stack:
+
+```bash
+# terminal 1
+cd /home/ubuntu/repos/quantmind
+. .venv/bin/activate
+python examples/agent_server.py
+
+# terminal 2
+cd /home/ubuntu/repos/quantmind/frontend
+npm install
+npm run dev
+```
+
+Then open `http://localhost:5173`.
+
+## Phase 9 acceptance
+
+- `npm run build` passes TypeScript and Vite build.
+- `frontend/dist/` is generated.
+- UI components render assistant messages, tool results, `ApprovalCard`, and `ResultChart`.
+- 83 unit tests pass.

@@ -687,16 +687,17 @@ engineering — each backed by code you can show and design decisions you can de
 | 6 | Cross-sectional pipelines (Pipeline, Factor, Filter, universe ranking) | Done | `Pipeline`, `Factor`, `Filter`, `PipelineEngine`, built-in factors, and `PipelineMomentumStrategy` bridge |
 | 7 | Storage and index (.iafbt bundles, SQLite Tier-1, rank_index) | Done | `BacktestBundle`, `SQLiteIndex`, `RankIndex`, `Tier1Store` in `quantmind/storage/` |
 | 8 | Agent backend (LLM tools, streaming, approval gates) | Done | FastAPI app in `quantmind/api/`, `AgentSession`, `Tool` registry, SSE `/api/chat/stream`, approval gates |
-| 9 | Chat UI (React + TS + SSE, inline charts, approval cards) | Not started | See §9 Phase 9 |
+| 9 | Chat UI (React + TS + SSE, inline charts, approval cards) | Done | Vite + React + TypeScript frontend in `frontend/`, EventSource SSE, `ApprovalCard`, `ResultChart` |
 | 10 | Paper trading with Upstox sandbox (OrderExecutor, portfolio, P&L) | Not started | See §9 Phase 10 |
 | 11 | Production hardening (auth, risk controls, audit, disclaimers) | Not started | See §9 Phase 11 |
 | 12 | Future expansion (intraday, more brokers, F&O) | Not started | See §9 Phase 12 |
 
 ### Next recommended step
 
-Phase 8 is complete (FastAPI agent backend with tools, SSE streaming, and
-approval gates). Next is **Phase 9** — chat UI: React + TypeScript + SSE,
-inline charts, and approval cards.
+Phase 9 is complete (React + TypeScript chat UI with SSE streaming,
+inline `recharts` charts, and approval cards). Next is **Phase 10** —
+paper trading with the Upstox sandbox: `OrderExecutor`, live portfolio
+tracking, and unrealised/realised P&L.
 
 ---
 

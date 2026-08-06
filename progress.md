@@ -233,6 +233,31 @@ Phase 3 — Vector backtest engine (multi-asset, fast, full metrics).
 | `/api/chat` and `/api/chat/stream` | returns assistant/events |
 | Approval gate flow | emits `approval_requested` and registers approval |
 
+---
+
+## Phase 9 — Chat UI (React + TypeScript + SSE) ✅
+
+**Date:** 2026-08-06
+
+### Deliverables
+
+- `frontend/` Vite + React + TypeScript project
+- `frontend/src/App.tsx` — chat interface
+- `frontend/src/api.ts` — SSE `EventSource` and REST helpers
+- `frontend/src/components/ApprovalCard.tsx` — approve/reject card
+- `frontend/src/components/EventRenderer.tsx` — render assistant/tool/result events
+- `frontend/src/components/ResultChart.tsx` — inline `recharts` line/bar charts
+- `frontend/vite.config.ts` — proxy `/api` to `http://localhost:8000`
+- `quantmind/api/main.py` CORS updated for frontend origin
+
+### Acceptance results
+
+| Test | Result |
+|------|--------|
+| `pytest -q` | 83/83 passed |
+| `npm run build` (frontend) | passes TypeScript check and Vite build |
+| Build artifacts | `frontend/dist/` generated |
+
 ### Next
 
-Phase 9 — Chat UI (React + TypeScript + SSE).
+Phase 10 — Paper trading with Upstox sandbox.

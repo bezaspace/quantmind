@@ -180,3 +180,15 @@ A running record of important design and implementation decisions. Keep entries 
 ### 36. Tool registry and approval gates
 - **Decision:** Tools are `Tool` objects registered on `AgentSession`. Tools that mutate state (e.g. `save_backtest_bundle`) require approval. The API emits `approval_requested` events and accepts approvals via `/api/approval/{request_id}`.
 - **Rationale:** Human-in-the-loop control for file-writing or order-related actions is a safety primitive; making approval gates explicit keeps the contract clear between agent, UI, and user.
+
+---
+
+## 2026-08-06 — Phase 9 (Chat UI)
+
+### 37. Vite + React + TypeScript chat frontend
+- **Decision:** Build the chat UI in `frontend/` as a Vite React TypeScript SPA. It connects to the FastAPI backend via `EventSource` SSE and uses `recharts` for inline result charts.
+- **Rationale:** Vite gives fast dev HMR and a production build, React/TS is the standard stack for the reference projects, and SSE is the simplest way to stream agent events to the browser.
+
+### 38. Vite dev proxy to backend
+- **Decision:** Configure `vite.config.ts` to proxy `/api` to `http://localhost:8000` and add CORS to the FastAPI app.
+- **Rationale:** This lets `npm run dev` serve the UI and talk to the Python backend without cross-origin issues during local development.
